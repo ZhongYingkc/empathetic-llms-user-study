@@ -1,14 +1,22 @@
-import { HashRouter } from 'react-router-dom'
-import './App.css'
+import { HashRouter, Link, Route, Routes } from 'react-router-dom'
+import { routes } from './config/routes'
+import { HomePage } from './pages/HomePage'
 
 function App() {
   return (
     <HashRouter>
-      <main className="project-status">
-        <p className="project-status__eyebrow">Empathetic LLMs User Study</p>
-        <h1>Frontend project initialized</h1>
-        <p>The research interface will be implemented in the next phase.</p>
-      </main>
+      <Routes>
+        <Route path={routes.home} element={<HomePage />} />
+        <Route
+          path={routes.questionnaire}
+          element={
+            <main className="route-placeholder">
+              <p>Questionnaire page will be implemented next.</p>
+              <Link to={routes.home}>Return home</Link>
+            </main>
+          }
+        />
+      </Routes>
     </HashRouter>
   )
 }

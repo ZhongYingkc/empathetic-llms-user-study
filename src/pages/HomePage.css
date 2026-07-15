@@ -1,0 +1,146 @@
+.home-page {
+  position: relative;
+  display: grid;
+  min-width: 1024px;
+  min-height: 100vh;
+  overflow: hidden;
+  place-items: center;
+  color: #11161a;
+  background:
+    radial-gradient(circle at 50% 46%, rgb(255 255 255 / 30%), transparent 34%),
+    linear-gradient(180deg, #e3eeff 0%, #edf2f7 57%, #fff2d7 100%);
+}
+
+.home-page__study-label {
+  position: absolute;
+  top: 34px;
+  right: 42px;
+  margin: 0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.home-page__content {
+  display: flex;
+  width: min(760px, 70vw);
+  margin-top: -4vh;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.home-page__logo {
+  display: block;
+  width: 104px;
+  height: 104px;
+  margin-bottom: 24px;
+  border-radius: 13px;
+}
+
+.home-page h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 62px;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.home-page h2 {
+  margin: 28px 0 0;
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.home-page__introduction {
+  max-width: 650px;
+  margin: 24px 0 0;
+  color: #5f6670;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.home-page__details {
+  display: flex;
+  margin: 22px 0 0;
+  padding: 0;
+  gap: 16px;
+  list-style: none;
+}
+
+.home-page__details li {
+  padding: 8px 15px 7px;
+  border: 1px solid rgb(58 63 53 / 8%);
+  border-radius: 999px;
+  color: #595847;
+  background: rgb(255 255 250 / 84%);
+  box-shadow: 0 3px 12px rgb(64 55 36 / 5%);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.home-page__start {
+  display: flex;
+  width: 158px;
+  min-height: 48px;
+  margin-top: 46px;
+  padding: 0 13px 0 20px;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid #1a1b1a;
+  border-radius: 7px;
+  color: #151515;
+  background: #fff36a;
+  box-shadow: 2px 2px 0 #1a1b1a;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  text-decoration: none;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+
+.home-page__start span:last-child {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.home-page__start:hover {
+  background: #ffef3e;
+  box-shadow: 4px 4px 0 #1a1b1a;
+  transform: translate(-2px, -2px);
+}
+
+.home-page__start:active {
+  box-shadow: 1px 1px 0 #1a1b1a;
+  transform: translate(1px, 1px);
+}
+
+.home-page__start:focus-visible {
+  outline: 3px solid #164b79;
+  outline-offset: 5px;
+}
+
+.home-page__privacy-note {
+  position: absolute;
+  bottom: 42px;
+  left: 50%;
+  width: 620px;
+  margin: 0;
+  color: #6f6b62;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  text-align: center;
+  transform: translateX(-50%);
+}

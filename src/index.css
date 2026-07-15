@@ -1,8 +1,7 @@
 :root {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   color: #151922;
-  background: #f7f8fa;
+  background: #e8f0fb;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -12,7 +11,7 @@
 }
 
 html {
-  min-width: 320px;
+  min-width: 1024px;
   min-height: 100%;
 }
 
@@ -26,4 +25,20 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+.route-placeholder {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.route-placeholder p {
+  margin: 0;
+}
+
+.route-placeholder a {
+  color: #164b79;
 }
