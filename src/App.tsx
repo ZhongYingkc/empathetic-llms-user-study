@@ -1,6 +1,7 @@
-import { HashRouter, Link, Route, Routes } from 'react-router-dom'
-import { routes } from './config/routes'
+import { HashRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
+import { questionnairePath, routes } from './config/routes'
 import { HomePage } from './pages/HomePage'
+import { QuestionnairePage } from './pages/QuestionnairePage'
 
 function App() {
   return (
@@ -9,10 +10,18 @@ function App() {
         <Route path={routes.home} element={<HomePage />} />
         <Route
           path={routes.questionnaire}
+          element={<Navigate to={questionnairePath(1)} replace />}
+        />
+        <Route
+          path={`${routes.questionnaire}/:questionnaireNumber`}
+          element={<QuestionnairePage />}
+        />
+        <Route
+          path={routes.scenarioIntroduction}
           element={
             <main className="route-placeholder">
-              <p>Questionnaire page will be implemented next.</p>
-              <Link to={routes.home}>Return home</Link>
+              <p>Scenario pages will be implemented next.</p>
+              <Link to={questionnairePath(3)}>Return to Questionnaire 3</Link>
             </main>
           }
         />

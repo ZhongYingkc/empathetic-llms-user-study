@@ -5,3 +5,6 @@ export const routes = {
   rate: '/rate',
   end: '/end',
 } as const
+
+export const questionnairePath = (questionnaireNumber: number) =>
+  `${routes.questionnaire}/${questionnaireNumber}`

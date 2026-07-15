@@ -1,0 +1,160 @@
+import { useEffect, useState } from 'react'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { questionnaireCount, questionnaires } from '../data/questionnaires'
+import { questionnairePath, routes } from '../config/routes'
+import './QuestionnairePage.css'
+
+const answerStorageKey = 'empathetic-llms-study:questionnaire-answers'
+const scaleValues = [1, 2, 3, 4, 5, 6, 7] as const
+
+type QuestionnaireAnswers = Record<string, number>
+
+function loadAnswers(): QuestionnaireAnswers {
+  try {
+    const storedAnswers = localStorage.getItem(answerStorageKey)
+    if (!storedAnswers) return {}
+
+    const parsedAnswers: unknown = JSON.parse(storedAnswers)
+    return parsedAnswers && typeof parsedAnswers === 'object'
+      ? (parsedAnswers as QuestionnaireAnswers)
+      : {}
+  } catch {
+    return {}
+  }
+}
+
+export function QuestionnairePage() {
+  const navigate = useNavigate()
+  const { questionnaireNumber } = useParams()
+  const currentNumber = Number(questionnaireNumber)
+  const questionnaire = questionnaires.find(
+    ({ number }) => number === currentNumber,
+  )
+  const [answers, setAnswers] = useState<QuestionnaireAnswers>(loadAnswers)
+
+  useEffect(() => {
+    localStorage.setItem(answerStorageKey, JSON.stringify(answers))
+  }, [answers])
+
+  if (!questionnaire) {
+    return <Navigate to={questionnairePath(1)} replace />
+  }
+
+  const goBack = () => {
+    navigate(
+      currentNumber === 1
+        ? routes.home
+        : questionnairePath(currentNumber - 1),
+    )
+  }
+
+  const goForward = () => {
+    navigate(
+      currentNumber === questionnaireCount
+        ? routes.scenarioIntroduction
+        : questionnairePath(currentNumber + 1),
+    )
+  }
+
+  return (
+    <main className="questionnaire-page">
+      <header className="questionnaire-header">
+        <div className="questionnaire-header__bar">
+          <Link
+            className="questionnaire-header__brand"
+            to={routes.home}
+            aria-label="SETH LAB home"
+          >
+            <span className="questionnaire-header__mark" aria-hidden="true">
+              SL
+            </span>
+            <span>SETH LAB</span>
+          </Link>
+
+          <p className="questionnaire-header__position">
+            Questionnaire {currentNumber} OF {questionnaireCount}
+          </p>
+
+          <Link className="questionnaire-header__exit" to={routes.home}>
+            Exit&nbsp; ↗
+          </Link>
+        </div>
+
+        <ol
+          className="questionnaire-progress"
+          aria-label={`Study progress: step ${currentNumber} of 7`}
+        >
+          {Array.from({ length: 7 }, (_, index) => (
+            <li
+              key={index}
+              className={index < currentNumber ? 'is-reached' : undefined}
+              aria-current={index + 1 === currentNumber ? 'step' : undefined}
+            >
+              <span className="visually-hidden">Step {index + 1}</span>
+            </li>
+          ))}
+        </ol>
+      </header>
+
+      <section className="questionnaire-content" aria-labelledby="questionnaire-title">
+        <p className="questionnaire-content__eyebrow">{questionnaire.eyebrow}</p>
+
+        <div className="rating-box">
+          <div className="rating-box__section-heading">
+            <h1 id="questionnaire-title">{questionnaire.title}</h1>
+            <p>1 = Strongly disagree&nbsp;&nbsp; · &nbsp;&nbsp;7 = Strongly agree</p>
+          </div>
+
+          <div className="rating-box__scale-header" aria-hidden="true">
+            <span />
+            {scaleValues.map((value) => (
+              <span key={value}>{value}</span>
+            ))}
+          </div>
+
+          <div className="rating-box__body">
+            {questionnaire.items.map((item) => (
+              <div className="likert-item" key={item.id}>
+                <p id={`${item.id}-prompt`}>{item.prompt}</p>
+                <div
+                  className="likert-item__scale"
+                  role="radiogroup"
+                  aria-labelledby={`${item.id}-prompt`}
+                >
+                  {scaleValues.map((value) => (
+                    <label key={value}>
+                      <input
+                        type="radio"
+                        name={item.id}
+                        value={value}
+                        checked={answers[item.id] === value}
+                        onChange={() =>
+                          setAnswers((currentAnswers) => ({
+                            ...currentAnswers,
+                            [item.id]: value,
+                          }))
+                        }
+                      />
+                      <span className="visually-hidden">
+                        {value} out of 7
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="questionnaire-footer">
+        <button className="questionnaire-button questionnaire-button--back" type="button" onClick={goBack}>
+          ←&nbsp; Back
+        </button>
+        <button className="questionnaire-button questionnaire-button--continue" type="button" onClick={goForward}>
+          Continue&nbsp; →
+        </button>
+      </footer>
+    </main>
+  )
+}
