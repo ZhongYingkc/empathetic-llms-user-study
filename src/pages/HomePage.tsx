@@ -15,7 +15,7 @@ export function HomePage() {
           src="./assets/seth-lab-logo.png"
           alt="SETH LAB"
           width="104"
-          height="104"
+          height="97"
         />
 
         <h1 id="home-title">Welcome</h1>

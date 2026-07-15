@@ -13,12 +13,7 @@
   overflow: hidden;
   place-items: center;
   color: var(--color-ink);
-  background: linear-gradient(
-    180deg,
-    #d8e7fb 0%,
-    #eaf0fa 55%,
-    #fbead2 100%
-  );
+  background: linear-gradient(180deg, #a8d3ff 0%, #fff4df 100%);
 }
 
 .home-page__study-label {
@@ -44,9 +39,8 @@
 .home-page__logo {
   display: block;
   width: 104px;
-  height: 104px;
+  height: auto;
   margin-bottom: 24px;
-  border-radius: 13px;
 }
 
 .home-page h1 {
