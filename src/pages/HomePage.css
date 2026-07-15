@@ -1,14 +1,24 @@
 .home-page {
+  --color-ink: #0a0a0a;
+  --color-muted: #6c6c6c;
+  --color-chip-border: #dbe0ec;
+  --color-chip-text: #66640f;
+  --color-accent-blue: #2683eb;
+  --color-accent-yellow: #fff546;
+
   position: relative;
   display: grid;
   min-width: 1024px;
   min-height: 100vh;
   overflow: hidden;
   place-items: center;
-  color: #11161a;
-  background:
-    radial-gradient(circle at 50% 46%, rgb(255 255 255 / 30%), transparent 34%),
-    linear-gradient(180deg, #e3eeff 0%, #edf2f7 57%, #fff2d7 100%);
+  color: var(--color-ink);
+  background: linear-gradient(
+    180deg,
+    #d8e7fb 0%,
+    #eaf0fa 55%,
+    #fbead2 100%
+  );
 }
 
 .home-page__study-label {
@@ -16,10 +26,10 @@
   top: 34px;
   right: 42px;
   margin: 0;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .home-page__content {
@@ -41,28 +51,29 @@
 
 .home-page h1 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 62px;
+  font-family: "Source Serif Pro", serif;
+  font-size: 64px;
   font-weight: 400;
-  letter-spacing: -0.04em;
+  letter-spacing: -2px;
   line-height: 1;
 }
 
 .home-page h2 {
   margin: 28px 0 0;
-  font-size: 27px;
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1.15;
+  font-family: "Radio Canada Big", sans-serif;
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -1px;
+  line-height: 1;
 }
 
 .home-page__introduction {
   max-width: 650px;
   margin: 24px 0 0;
-  color: #5f6670;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 16px;
-  line-height: 1.55;
+  color: var(--color-muted);
+  font-family: "Source Serif Pro", serif;
+  font-size: 18px;
+  line-height: 1.5;
 }
 
 .home-page__details {
@@ -75,15 +86,14 @@
 
 .home-page__details li {
   padding: 8px 15px 7px;
-  border: 1px solid rgb(58 63 53 / 8%);
+  border: 1px solid var(--color-chip-border);
   border-radius: 999px;
-  color: #595847;
-  background: rgb(255 255 250 / 84%);
-  box-shadow: 0 3px 12px rgb(64 55 36 / 5%);
-  font-family: "Courier New", Courier, monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  color: var(--color-chip-text);
+  background: #fff;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .home-page__start {
@@ -93,14 +103,16 @@
   margin-top: 46px;
   padding: 0 13px 0 20px;
   align-items: center;
-  justify-content: space-between;
-  border: 2px solid #1a1b1a;
+  justify-content: center;
+  border: 2px solid var(--color-ink);
   border-radius: 7px;
-  color: #151515;
-  background: #fff36a;
-  box-shadow: 2px 2px 0 #1a1b1a;
-  font-family: "Courier New", Courier, monospace;
+  color: var(--color-ink);
+  background: var(--color-accent-yellow);
+  box-shadow: 2px 2px 0 var(--color-ink);
+  font-family: "Geist Mono", monospace;
   font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
   text-decoration: none;
   transition:
     transform 140ms ease,
@@ -108,25 +120,19 @@
     background-color 140ms ease;
 }
 
-.home-page__start span:last-child {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 22px;
-  line-height: 1;
-}
-
 .home-page__start:hover {
-  background: #ffef3e;
-  box-shadow: 4px 4px 0 #1a1b1a;
+  background: var(--color-accent-yellow);
+  box-shadow: 4px 4px 0 var(--color-ink);
   transform: translate(-2px, -2px);
 }
 
 .home-page__start:active {
-  box-shadow: 1px 1px 0 #1a1b1a;
+  box-shadow: 1px 1px 0 var(--color-ink);
   transform: translate(1px, 1px);
 }
 
 .home-page__start:focus-visible {
-  outline: 3px solid #164b79;
+  outline: 3px solid var(--color-accent-blue);
   outline-offset: 5px;
 }
 
@@ -136,11 +142,12 @@
   left: 50%;
   width: 620px;
   margin: 0;
-  color: #6f6b62;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 10px;
-  letter-spacing: 0.02em;
-  line-height: 1.45;
+  color: var(--color-muted);
+  font-family: "Geist Mono", monospace;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.6;
   text-align: center;
   transform: translateX(-50%);
 }

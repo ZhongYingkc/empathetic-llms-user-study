@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { routes } from '../config/routes'
 import './HomePage.css'
 
-const studyDetails = ['20–30 MINUTES', '4 SCENARIOS', 'ANONYMOUS']
+const studyDetails = ['≈ 20–30 MINUTES', '4 SCENARIOS', 'ANONYMOUS']
 
 export function HomePage() {
   return (
@@ -22,9 +22,9 @@ export function HomePage() {
         <h2>Sharing &amp; rating empathetic AI responses</h2>
 
         <p className="home-page__introduction">
-          In this session you’ll read a few everyday emotional situations, talk
+          In this session you'll read a few everyday emotional situations, talk
           with an AI virtual agent, and rate how it responds. There are no right
-          or wrong answers — we’re interested in your honest experience.
+          or wrong answers — we're interested in your honest experience.
         </p>
 
         <ul className="home-page__details" aria-label="Study details">
@@ -34,8 +34,7 @@ export function HomePage() {
         </ul>
 
         <Link className="home-page__start" to={routes.questionnaire}>
-          <span>Get started</span>
-          <span aria-hidden="true">›</span>
+          Get started&nbsp;&nbsp;→
         </Link>
       </section>
 

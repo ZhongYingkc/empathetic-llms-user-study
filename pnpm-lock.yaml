@@ -8,6 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/geist-mono':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/radio-canada-big':
+        specifier: ^5.2.7
+        version: 5.2.7
+      '@fontsource/source-serif-pro':
+        specifier: ^5.2.5
+        version: 5.2.5
       '@hookform/resolvers':
         specifier: ^5.4.0
         version: 5.4.0(react-hook-form@7.81.0(react@19.2.7))
@@ -190,6 +199,15 @@ packages:
   '@eslint/plugin-kit@0.7.2':
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@fontsource/geist-mono@5.2.8':
+    resolution: {integrity: sha512-YqZUb3X42GjRaHkibUNyE8K4Rk9A6I9Ez81YpJYiuJN4ggmTW2ixoQpa9EWCPfXZtIsCQJTyrDoV9OJOZO/UcA==}
+
+  '@fontsource/radio-canada-big@5.2.7':
+    resolution: {integrity: sha512-FbFwPzj/PsWA9s0/V5Zol4GlfECeFHYby9f6UkX5+vG7IL40SXQff0SpzlR5984gXQ77NXlOffV7gmtC9g1nvw==}
+
+  '@fontsource/source-serif-pro@5.2.5':
+    resolution: {integrity: sha512-MTsjMrl2+81dar37wV1taDYzU+o9ArcuBVBkXRNb6JuNCBmrKOIAAmI1wC3cE+Q0eAlgXlfNrvZ7swP3l2M8tQ==}
 
   '@hookform/resolvers@5.4.0':
     resolution: {integrity: sha512-EIsqr/t/qbinPIhGjMdtvutIN1Kk4uwbROE9/UQ93CAVGR7GkA7Y92+fX80OzXi/OB67jVFYwKGO1WzkxmkFZw==}
@@ -1315,6 +1333,12 @@ snapshots:
     dependencies:
       '@eslint/core': 1.2.1
       levn: 0.4.1
+
+  '@fontsource/geist-mono@5.2.8': {}
+
+  '@fontsource/radio-canada-big@5.2.7': {}
+
+  '@fontsource/source-serif-pro@5.2.5': {}
 
   '@hookform/resolvers@5.4.0(react-hook-form@7.81.0(react@19.2.7))':
     dependencies:
