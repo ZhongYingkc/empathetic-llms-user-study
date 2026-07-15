@@ -4,8 +4,7 @@ import { questionnaireCount, questionnaires } from '../data/questionnaires'
 import { questionnairePath, routes } from '../config/routes'
 import './QuestionnairePage.css'
 
-const answerStorageKey = 'empathetic-llms-study:questionnaire-answers'
-const scaleValues = [1, 2, 3, 4, 5, 6, 7] as const
+const answerStorageKey = 'empathetic-llms-study:questionnaire-answers:v2'
 
 type QuestionnaireAnswers = Record<string, number>
 
@@ -39,6 +38,12 @@ export function QuestionnairePage() {
   if (!questionnaire) {
     return <Navigate to={questionnairePath(1)} replace />
   }
+
+  const scaleValues = Array.from(
+    { length: questionnaire.scaleMax },
+    (_, index) => index + 1,
+  )
+  const scaleGrid = `minmax(0, 1fr) repeat(${questionnaire.scaleMax}, 54px)`
 
   const goBack = () => {
     navigate(
@@ -102,10 +107,17 @@ export function QuestionnairePage() {
         <div className="rating-box">
           <div className="rating-box__section-heading">
             <h1 id="questionnaire-title">{questionnaire.title}</h1>
-            <p>1 = Strongly disagree&nbsp;&nbsp; · &nbsp;&nbsp;7 = Strongly agree</p>
+            <p>
+              1 = Strongly disagree&nbsp;&nbsp; · &nbsp;&nbsp;
+              {questionnaire.scaleMax} = Strongly agree
+            </p>
           </div>
 
-          <div className="rating-box__scale-header" aria-hidden="true">
+          <div
+            className="rating-box__scale-header"
+            style={{ gridTemplateColumns: scaleGrid }}
+            aria-hidden="true"
+          >
             <span />
             {scaleValues.map((value) => (
               <span key={value}>{value}</span>
@@ -114,12 +126,19 @@ export function QuestionnairePage() {
 
           <div className="rating-box__body">
             {questionnaire.items.map((item) => (
-              <div className="likert-item" key={item.id}>
+              <div
+                className="likert-item"
+                style={{ gridTemplateColumns: scaleGrid }}
+                key={item.id}
+              >
                 <p id={`${item.id}-prompt`}>{item.prompt}</p>
                 <div
                   className="likert-item__scale"
                   role="radiogroup"
                   aria-labelledby={`${item.id}-prompt`}
+                  style={{
+                    gridTemplateColumns: `repeat(${questionnaire.scaleMax}, 54px)`,
+                  }}
                 >
                   {scaleValues.map((value) => (
                     <label key={value}>
