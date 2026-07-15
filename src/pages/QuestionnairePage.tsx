@@ -70,9 +70,13 @@ export function QuestionnairePage() {
             to={routes.home}
             aria-label="SETH LAB home"
           >
-            <span className="questionnaire-header__mark" aria-hidden="true">
-              SL
-            </span>
+            <img
+              className="questionnaire-header__logo"
+              src="./assets/seth-lab-logo.png"
+              alt=""
+              width="32"
+              height="32"
+            />
             <span>SETH LAB</span>
           </Link>
 
@@ -155,7 +159,7 @@ export function QuestionnairePage() {
                         }
                       />
                       <span className="visually-hidden">
-                        {value} out of 7
+                        {value} out of {questionnaire.scaleMax}
                       </span>
                     </label>
                   ))}

@@ -48,15 +48,11 @@
   text-decoration: none;
 }
 
-.questionnaire-header__mark {
-  display: grid;
+.questionnaire-header__logo {
+  display: block;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  place-items: center;
-  color: #fff;
-  background: var(--color-accent-blue);
-  font-size: 10px;
+  object-fit: contain;
 }
 
 .questionnaire-header__position {
