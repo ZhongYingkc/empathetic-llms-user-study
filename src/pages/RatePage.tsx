@@ -246,7 +246,6 @@ export function RatePage() {
         <section className="rating-box-rate" aria-labelledby="rate-response-heading">
           <div className="rating-box-rate__heading">
             <h2 id="rate-response-heading">RATE RESPONSE</h2>
-            <p>{response}</p>
           </div>
           <div className="rating-box-rate__anchors" aria-hidden="true">
             <span>Strongly disagree</span>
