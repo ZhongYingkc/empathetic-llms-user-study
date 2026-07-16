@@ -6,10 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "worker:check": "tsc -p tsconfig.worker.json",
+    "worker:dev": "pnpm dlx wrangler@latest dev --config wrangler.jsonc",
+    "worker:deploy": "pnpm dlx wrangler@latest deploy --config wrangler.jsonc",
+    "worker:deploy:admin": "pnpm dlx wrangler@latest deploy --config wrangler.admin.jsonc",
+    "db:migrate:prod": "pnpm dlx wrangler@latest d1 migrations apply empathetic-study-prod --remote --config wrangler.jsonc",
+    "db:migrate:test": "pnpm dlx wrangler@latest d1 migrations apply empathetic-study-test --remote --config wrangler.jsonc",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "pnpm lint && pnpm test && pnpm build",
+    "check": "pnpm lint && pnpm test && pnpm build && pnpm worker:check",
     "preview": "vite preview"
   },
   "dependencies": {

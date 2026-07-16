@@ -2,6 +2,11 @@ const sessionPrefix = 'empathetic-llms-study:'
 
 export const studySessionKeys = {
   accessMode: `${sessionPrefix}access-mode`,
+  backendSessionId: `${sessionPrefix}backend-session-id`,
+  sessionToken: `${sessionPrefix}session-token`,
+  studyVersion: `${sessionPrefix}study-version`,
+  scenarioOrder: `${sessionPrefix}scenario-order`,
+  responseOrders: `${sessionPrefix}response-orders`,
   questionnaireAnswers: `${sessionPrefix}questionnaire-answers:session`,
   questionnairesCompleted: `${sessionPrefix}questionnaires-completed`,
   currentScenario: `${sessionPrefix}current-scenario`,
@@ -13,6 +18,15 @@ export const studySessionKeys = {
 
 export type StudyAccessMode = 'participant' | 'researcher'
 
+export type StudySessionBootstrap = {
+  sessionId: string
+  sessionToken: string
+  accessMode: StudyAccessMode
+  studyVersion: string
+  scenarioOrder: string[]
+  responseOrders: Record<string, string[]>
+}
+
 export function setStudyAccessMode(mode: StudyAccessMode): void {
   try {
     sessionStorage.setItem(studySessionKeys.accessMode, mode)
@@ -21,13 +35,61 @@ export function setStudyAccessMode(mode: StudyAccessMode): void {
   }
 }
 
+export function initializeStudySession(session: StudySessionBootstrap): void {
+  clearStudySession()
+  setStudyAccessMode(session.accessMode)
+  try {
+    sessionStorage.setItem(studySessionKeys.backendSessionId, session.sessionId)
+    sessionStorage.setItem(studySessionKeys.sessionToken, session.sessionToken)
+    sessionStorage.setItem(studySessionKeys.studyVersion, session.studyVersion)
+    sessionStorage.setItem(
+      studySessionKeys.scenarioOrder,
+      JSON.stringify(session.scenarioOrder),
+    )
+    sessionStorage.setItem(
+      studySessionKeys.responseOrders,
+      JSON.stringify(session.responseOrders),
+    )
+  } catch {
+    // The route guard will return to the home page if storage is unavailable.
+  }
+}
+
 export function hasStudyAccess(): boolean {
   try {
     const accessMode = sessionStorage.getItem(studySessionKeys.accessMode)
-    return accessMode === 'participant' || accessMode === 'researcher'
+    return (
+      (accessMode === 'participant' || accessMode === 'researcher') &&
+      Boolean(sessionStorage.getItem(studySessionKeys.backendSessionId)) &&
+      Boolean(sessionStorage.getItem(studySessionKeys.sessionToken))
+    )
   } catch {
     return false
   }
+}
+
+export function getBackendSession(): {
+  sessionId: string
+  sessionToken: string
+} | null {
+  try {
+    const sessionId = sessionStorage.getItem(studySessionKeys.backendSessionId)
+    const sessionToken = sessionStorage.getItem(studySessionKeys.sessionToken)
+    return sessionId && sessionToken ? { sessionId, sessionToken } : null
+  } catch {
+    return null
+  }
+}
+
+export function getScenarioOrder(): string[] {
+  return readSessionJson<string[]>(studySessionKeys.scenarioOrder, [])
+}
+
+export function getResponseOrders(): Record<string, string[]> {
+  return readSessionJson<Record<string, string[]>>(
+    studySessionKeys.responseOrders,
+    {},
+  )
 }
 
 export function isResearcherMode(): boolean {

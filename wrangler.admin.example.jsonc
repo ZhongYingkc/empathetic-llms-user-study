@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "empathetic-study-admin",
+  "main": "worker/admin.ts",
+  "compatibility_date": "2026-07-16",
+  "d1_databases": [
+    {
+      "binding": "PROD_DB",
+      "database_name": "empathetic-study-prod",
+      "database_id": "REPLACE_WITH_PROD_DATABASE_ID"
+    },
+    {
+      "binding": "TEST_DB",
+      "database_name": "empathetic-study-test",
+      "database_id": "REPLACE_WITH_TEST_DATABASE_ID"
+    }
+  ],
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "REPLACE_WITH_TEAM_NAME.cloudflareaccess.com",
+    "ACCESS_AUD": "REPLACE_WITH_ACCESS_APPLICATION_AUD"
+  }
+}

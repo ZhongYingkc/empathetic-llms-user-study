@@ -1,45 +1,82 @@
 # Empathetic LLMs User Study
 
-Frontend for a research study in which participants provide text responses and
-rate empathetic AI outputs.
+Desktop research-study frontend and Cloudflare Worker API for collecting
+questionnaire answers, scenario prompts, randomized response ratings, and
+rating explanations.
 
-## Technology decisions
+## Architecture
 
-- **Language:** TypeScript
-- **UI framework:** React 19
-- **Build tool:** Vite 8
-- **Routing:** React Router with hash-based URLs for GitHub Pages compatibility
-- **Forms:** React Hook Form
-- **Validation:** Zod
-- **State:** React state/context; no global state library until the flow requires it
-- **Draft persistence:** Browser `localStorage` for incomplete responses only
-- **Backend boundary:** Native `fetch`, configured through `VITE_API_BASE_URL`
-- **Testing:** Vitest
-- **Code quality:** ESLint and TypeScript strict mode
-- **Package manager:** pnpm
-- **Frontend hosting:** GitHub Pages
-- **Planned backend:** Cloudflare Workers with a durable database
+- React 19, TypeScript, Vite, and hash-based React Router
+- GitHub Pages frontend
+- Cloudflare Worker API
+- Cloudflare D1 production and researcher-test databases
+- Cloudflare Turnstile verification
+- Session-scoped browser drafts; D1 is the durable source of truth
+- Zod validation in both the browser-facing domain and Worker request boundary
 
-## Commands
+## Local commands
 
 ```bash
 pnpm install
 pnpm dev
 pnpm check
 pnpm build
+pnpm worker:check
 ```
 
-Copy `.env.example` to `.env.local` when a backend endpoint is available. Do not
-store secrets in `VITE_*` variables because they are included in the browser
-bundle.
+Copy `.env.example` to `.env.local` to override public frontend configuration.
+Never put secrets in a `VITE_*` variable because Vite includes those values in
+the browser bundle.
 
-## Source layout
+## Cloudflare Worker setup
+
+1. Copy `wrangler.example.jsonc` to the ignored `wrangler.jsonc` file.
+2. Replace both D1 database ID placeholders with the IDs shown in the
+   Cloudflare D1 dashboard.
+3. Add these encrypted Worker Secrets in Cloudflare:
+
+   - `TURNSTILE_SECRET_KEY`
+   - `PARTICIPANT_ACCESS_CODE`
+   - `RESEARCHER_ACCESS_CODE`
+   - `SESSION_SIGNING_SECRET`
+
+4. Apply the same migration to both databases:
+
+```bash
+pnpm db:migrate:prod
+pnpm db:migrate:test
+```
+
+5. Deploy the API:
+
+```bash
+pnpm worker:deploy
+```
+
+The optional `worker/admin.ts` export Worker has a separate
+`wrangler.admin.example.jsonc` template. It verifies the Cloudflare Access JWT
+before offering separate production and researcher-test CSV downloads.
+
+`SESSION_SIGNING_SECRET` should contain at least 32 cryptographically random
+bytes. `.dev.vars` is ignored by Git and may be created from
+`.dev.vars.example` for local Worker development.
+
+## Data flow
+
+- Starting the study validates Turnstile and the access code on the Worker.
+- Participant sessions use `PROD_DB`; researcher sessions use `TEST_DB`.
+- The Worker generates and stores randomized Scenario and Response orders.
+- Each page is validated and saved before navigation continues.
+- The final submission is accepted only after the Worker verifies the complete
+  participant dataset.
+- Exit deletes an incomplete backend session and clears the browser session.
+
+## Project layout
 
 ```text
-src/
-├── config/       # Routes and environment-level configuration
-├── domain/       # Survey types, schemas, and business rules
-├── services/     # API and browser storage boundaries
-├── App.tsx       # Application shell; real pages are not implemented yet
-└── main.tsx      # Browser entry point
+migrations/        D1 schema migrations
+worker/            Cloudflare Worker API and tests
+src/data/          Study content with stable IDs and versions
+src/pages/         React pages
+src/services/      Worker API and session boundaries
 ```

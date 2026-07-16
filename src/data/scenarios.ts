@@ -1,9 +1,14 @@
 export type ScenarioDefinition = {
+  id: string
   number: number
   title: string
   content: string
   possiblePrompt: string
-  possibleResponses: string[]
+  possibleResponses: Array<{
+    id: string
+    text: string
+    contentVersion: number
+  }>
 }
 
 const designPlaceholder = {
@@ -19,14 +24,16 @@ const designPlaceholder = {
 export const scenarios: ScenarioDefinition[] = Array.from(
   { length: 4 },
   (_, index) => ({
+    id: `S${String(index + 1).padStart(2, '0')}`,
     number: index + 1,
     title: designPlaceholder.title,
     content: designPlaceholder.content,
     possiblePrompt: designPlaceholder.possiblePrompt,
-    possibleResponses: Array.from(
-      { length: 5 },
-      () => designPlaceholder.possibleResponse,
-    ),
+    possibleResponses: Array.from({ length: 5 }, (_, responseIndex) => ({
+      id: `S${String(index + 1).padStart(2, '0')}-R${String(responseIndex + 1).padStart(2, '0')}`,
+      text: designPlaceholder.possibleResponse,
+      contentVersion: 1,
+    })),
   }),
 )
 

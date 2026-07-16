@@ -138,11 +138,17 @@
   line-height: 16px;
 }
 
+.home-page__turnstile {
+  min-width: 300px;
+  min-height: 65px;
+  margin-top: 6px;
+}
+
 .home-page__start {
   display: flex;
   width: 158px;
   min-height: 48px;
-  margin-top: 10px;
+  margin-top: 12px;
   padding: 0 13px 0 20px;
   align-items: center;
   justify-content: center;

@@ -22,8 +22,20 @@
 .scenario-content,
 .scenario-prompt,
 .scenario-footer {
+  position: relative;
   width: min(1200px, calc(100vw - 80px));
   flex: 0 0 auto;
+}
+
+.scenario-save-error {
+  position: absolute;
+  bottom: 58px;
+  left: 50%;
+  margin: 0;
+  color: #b42318;
+  font-family: "Geist Mono", monospace;
+  font-size: 11px;
+  transform: translateX(-50%);
 }
 
 .scenario-header {
@@ -245,4 +257,3 @@
   outline: 3px solid var(--color-accent-blue);
   outline-offset: 4px;
 }
-

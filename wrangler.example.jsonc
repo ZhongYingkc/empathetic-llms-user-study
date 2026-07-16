@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "empathetic-study-api",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-16",
+  "preview_urls": false,
+  "d1_databases": [
+    {
+      "binding": "PROD_DB",
+      "database_name": "empathetic-study-prod",
+      "database_id": "REPLACE_WITH_PROD_DATABASE_ID",
+      "migrations_dir": "migrations"
+    },
+    {
+      "binding": "TEST_DB",
+      "database_name": "empathetic-study-test",
+      "database_id": "REPLACE_WITH_TEST_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

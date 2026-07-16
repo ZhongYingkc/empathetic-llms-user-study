@@ -1,40 +1,100 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { studyAccessCodes } from '../config/access'
 import { routes } from '../config/routes'
-import {
-  clearStudySession,
-  setStudyAccessMode,
-  type StudyAccessMode,
-} from '../services/studySession'
+import { createStudySession, StudyApiError } from '../services/studyApi'
+import { initializeStudySession } from '../services/studySession'
 import './HomePage.css'
 
 const studyDetails = ['≈ 20–30 MINUTES', '4 SCENARIOS', 'ANONYMOUS']
+const turnstileSiteKey =
+  import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '0x4AAAAAAD3XDROrQZpCr3BD'
 
 export function HomePage() {
   const navigate = useNavigate()
   const [accessCode, setAccessCode] = useState('')
   const [accessError, setAccessError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [isStarting, setIsStarting] = useState(false)
+  const turnstileContainerRef = useRef<HTMLDivElement>(null)
+  const turnstileWidgetIdRef = useRef<string | null>(null)
 
-  const startStudy = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const normalizedCode = accessCode.trim().toUpperCase()
-    let accessMode: StudyAccessMode | null = null
-
-    if (normalizedCode === studyAccessCodes.participant) {
-      accessMode = 'participant'
-    } else if (normalizedCode === studyAccessCodes.researcher) {
-      accessMode = 'researcher'
+  useEffect(() => {
+    let isCancelled = false
+    const renderWidget = () => {
+      if (
+        isCancelled ||
+        !window.turnstile ||
+        !turnstileContainerRef.current ||
+        turnstileWidgetIdRef.current
+      ) {
+        return
+      }
+      turnstileWidgetIdRef.current = window.turnstile.render(
+        turnstileContainerRef.current,
+        {
+          sitekey: turnstileSiteKey,
+          theme: 'light',
+          callback: setTurnstileToken,
+          'expired-callback': () => setTurnstileToken(''),
+          'error-callback': () => {
+            setTurnstileToken('')
+            setAccessError('Verification could not load. Please refresh and try again.')
+          },
+        },
+      )
     }
 
-    if (!accessMode) {
-      setAccessError('Please enter a valid access code.')
+    let script = document.querySelector<HTMLScriptElement>(
+      'script[data-empathetic-study-turnstile]',
+    )
+    if (!script) {
+      script = document.createElement('script')
+      script.src =
+        'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+      script.async = true
+      script.defer = true
+      script.dataset.empatheticStudyTurnstile = 'true'
+      document.head.append(script)
+    }
+    script.addEventListener('load', renderWidget)
+    renderWidget()
+
+    return () => {
+      isCancelled = true
+      script?.removeEventListener('load', renderWidget)
+      if (turnstileWidgetIdRef.current && window.turnstile) {
+        window.turnstile.remove(turnstileWidgetIdRef.current)
+        turnstileWidgetIdRef.current = null
+      }
+    }
+  }, [])
+
+  const startStudy = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!turnstileToken) {
+      setAccessError('Please complete the verification.')
       return
     }
 
-    clearStudySession()
-    setStudyAccessMode(accessMode)
-    navigate(routes.questionnaire)
+    setIsStarting(true)
+    setAccessError('')
+    try {
+      const session = await createStudySession(accessCode, turnstileToken)
+      initializeStudySession(session)
+      navigate(routes.questionnaire)
+    } catch (error) {
+      setAccessError(
+        error instanceof StudyApiError
+          ? error.message
+          : 'Unable to start the study. Please try again.',
+      )
+      setTurnstileToken('')
+      if (turnstileWidgetIdRef.current) {
+        window.turnstile?.reset(turnstileWidgetIdRef.current)
+      }
+    } finally {
+      setIsStarting(false)
+    }
   }
 
   return (
@@ -85,8 +145,17 @@ export function HomePage() {
           <p id="study-access-error" className="home-page__access-error" role="alert">
             {accessError}
           </p>
-          <button className="home-page__start" type="submit" disabled={!accessCode.trim()}>
-            Get started&nbsp;&nbsp;→
+          <div
+            className="home-page__turnstile"
+            ref={turnstileContainerRef}
+            aria-label="Security verification"
+          />
+          <button
+            className="home-page__start"
+            type="submit"
+            disabled={!accessCode.trim() || !turnstileToken || isStarting}
+          >
+            {isStarting ? 'Starting…' : 'Get started  →'}
           </button>
         </form>
       </section>

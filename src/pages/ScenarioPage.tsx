@@ -5,12 +5,18 @@ import { questionnairePath, ratePath, routes, scenarioPath } from '../config/rou
 import {
   clearStudySession,
   getCurrentScenario,
+  getScenarioOrder,
   hasStudyAccess,
   isResearcherMode,
   readSessionJson,
   studySessionKeys,
   writeSessionJson,
 } from '../services/studySession'
+import {
+  abandonStudy,
+  saveScenarioPrompt,
+  StudyApiError,
+} from '../services/studyApi'
 import './ScenarioPage.css'
 
 type ScenarioPrompts = Record<string, string>
@@ -31,12 +37,15 @@ export function ScenarioPage() {
   const { scenarioNumber } = useParams()
   const requestedScenarioNumber = Number(scenarioNumber)
   const currentScenarioNumber = getCurrentScenario()
-  const scenario = scenarios.find(
-    ({ number }) => number === requestedScenarioNumber,
-  )
+  const orderedScenarios = getScenarioOrder()
+    .map((scenarioId) => scenarios.find(({ id }) => id === scenarioId))
+    .filter((value) => value !== undefined)
+  const scenario = orderedScenarios[requestedScenarioNumber - 1]
   const [prompts, setPrompts] = useState<ScenarioPrompts>(() =>
     readSessionJson(studySessionKeys.scenarioPrompts, {}),
   )
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
     writeSessionJson(studySessionKeys.scenarioPrompts, prompts)
@@ -50,28 +59,56 @@ export function ScenarioPage() {
     return <Navigate to={questionnairePath(1)} replace />
   }
 
+  if (orderedScenarios.length !== scenarioCount) {
+    return <Navigate to={routes.home} replace />
+  }
+
   if (!scenario || requestedScenarioNumber !== currentScenarioNumber) {
     return <Navigate to={scenarioPath(currentScenarioNumber)} replace />
   }
 
-  const promptKey = `scenario-${scenario.number}`
+  const promptKey = scenario.id
   const prompt = prompts[promptKey] ?? ''
   const canContinue = isResearcherMode() || prompt.trim().length > 0
-  const completedStepCount = 3 + scenario.number
+  const completedStepCount = 3 + requestedScenarioNumber
 
-  const exitStudy = () => {
-    clearStudySession()
-    navigate(routes.home, { replace: true })
+  const exitStudy = async () => {
+    try {
+      await abandonStudy()
+    } catch {
+      // Returning home must remain possible if the network is unavailable.
+    } finally {
+      clearStudySession()
+      navigate(routes.home, { replace: true })
+    }
   }
 
-  const continueToResponses = () => {
+  const continueToResponses = async () => {
     if (!canContinue) return
+    setIsSaving(true)
+    setSaveError('')
+    try {
+      await saveScenarioPrompt({
+        scenarioId: scenario.id,
+        displayPosition: requestedScenarioNumber,
+        prompt,
+      })
+    } catch (error) {
+      setSaveError(
+        error instanceof StudyApiError
+          ? error.message
+          : 'Unable to save your prompt. Please try again.',
+      )
+      setIsSaving(false)
+      return
+    }
     try {
       sessionStorage.setItem(studySessionKeys.unlockedResponse, '1')
     } catch {
       // Navigation still works if browser storage is unavailable.
     }
-    navigate(ratePath(scenario.number, 1), { replace: true })
+    setIsSaving(false)
+    navigate(ratePath(requestedScenarioNumber, 1), { replace: true })
   }
 
   return (
@@ -94,7 +131,7 @@ export function ScenarioPage() {
           </Link>
 
           <p className="scenario-header__position">
-            SCENARIO {scenario.number} OF {scenarioCount}
+            SCENARIO {requestedScenarioNumber} OF {scenarioCount}
           </p>
 
           <button className="scenario-header__exit" type="button" onClick={exitStudy}>
@@ -120,7 +157,7 @@ export function ScenarioPage() {
 
       <section className="scenario-content" aria-labelledby="scenario-title">
         <p className="scenario-content__eyebrow">
-          SCENARIO {scenario.number} OF {scenarioCount}
+          SCENARIO {requestedScenarioNumber} OF {scenarioCount}
         </p>
         <h1 id="scenario-title">{scenario.title}</h1>
         <p className="scenario-content__instruction">
@@ -149,12 +186,12 @@ export function ScenarioPage() {
               if (event.key === 'Enter') continueToResponses()
             }}
             placeholder="Message the virtual agent…"
-            aria-label={`Your message for scenario ${scenario.number}`}
+            aria-label={`Your message for scenario ${requestedScenarioNumber}`}
           />
           <button
             type="button"
             onClick={continueToResponses}
-            disabled={!canContinue}
+            disabled={!canContinue || isSaving}
             aria-label="Continue to response rating"
           >
             ↑
@@ -163,13 +200,14 @@ export function ScenarioPage() {
       </section>
 
       <footer className="scenario-footer">
+        {saveError && <p className="scenario-save-error" role="alert">{saveError}</p>}
         <button
           className="scenario-response-button"
           type="button"
           onClick={continueToResponses}
-          disabled={!canContinue}
+          disabled={!canContinue || isSaving}
         >
-          Response&nbsp; →
+          {isSaving ? 'Saving…' : 'Response  →'}
         </button>
       </footer>
     </main>

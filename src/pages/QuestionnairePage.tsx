@@ -8,6 +8,11 @@ import {
   isResearcherMode,
   studySessionKeys,
 } from '../services/studySession'
+import {
+  abandonStudy,
+  saveQuestionnaire,
+  StudyApiError,
+} from '../services/studyApi'
 import './QuestionnairePage.css'
 
 const legacyAnswerStorageKeys = [
@@ -50,6 +55,8 @@ export function QuestionnairePage() {
     ({ number }) => number === currentNumber,
   )
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(loadAnswers)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
     try {
@@ -80,21 +87,54 @@ export function QuestionnairePage() {
     isResearcherMode() ||
     questionnaire.items.every((item) => answers[item.id] !== undefined)
 
-  const exitStudy = () => {
-    clearStudySession()
-    navigate(routes.home, { replace: true })
+  const currentAnswers = Object.fromEntries(
+    questionnaire.items.flatMap((item) =>
+      answers[item.id] === undefined ? [] : [[item.id, answers[item.id]]],
+    ),
+  )
+
+  const saveCurrentQuestionnaire = async () => {
+    setIsSaving(true)
+    setSaveError('')
+    try {
+      await saveQuestionnaire(`questionnaire-${currentNumber}`, currentAnswers)
+      return true
+    } catch (error) {
+      setSaveError(
+        error instanceof StudyApiError
+          ? error.message
+          : 'Unable to save your answers. Please try again.',
+      )
+      return false
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const goBack = () => {
-    navigate(
-      currentNumber === 1
-        ? routes.home
-        : questionnairePath(currentNumber - 1),
-    )
+  const exitStudy = async () => {
+    try {
+      await abandonStudy()
+    } catch {
+      // Returning home must remain possible if the network is unavailable.
+    } finally {
+      clearStudySession()
+      navigate(routes.home, { replace: true })
+    }
   }
 
-  const goForward = () => {
+  const goBack = async () => {
+    if (currentNumber === 1) {
+      await exitStudy()
+      return
+    }
+    if (isQuestionnaireComplete && (await saveCurrentQuestionnaire())) {
+      navigate(questionnairePath(currentNumber - 1))
+    }
+  }
+
+  const goForward = async () => {
     if (!isQuestionnaireComplete) return
+    if (!(await saveCurrentQuestionnaire())) return
 
     if (currentNumber === questionnaireCount) {
       try {
@@ -223,16 +263,19 @@ export function QuestionnairePage() {
       </section>
 
       <footer className="questionnaire-footer">
-        <button className="questionnaire-button questionnaire-button--back" type="button" onClick={goBack}>
+        {saveError && <p className="questionnaire-save-error" role="alert">{saveError}</p>}
+        <button className="questionnaire-button questionnaire-button--back" type="button" onClick={goBack} disabled={isSaving}>
           ←&nbsp; Back
         </button>
         <button
           className="questionnaire-button questionnaire-button--continue"
           type="button"
           onClick={goForward}
-          disabled={!isQuestionnaireComplete}
+          disabled={!isQuestionnaireComplete || isSaving}
         >
-          {currentNumber === questionnaireCount ? 'Scenario' : 'Continue'}&nbsp; →
+          {isSaving
+            ? 'Saving…'
+            : `${currentNumber === questionnaireCount ? 'Scenario' : 'Continue'}  →`}
         </button>
       </footer>
     </main>

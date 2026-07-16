@@ -6,6 +6,8 @@ import { questionnairePath, ratePath, routes, scenarioPath } from '../config/rou
 import {
   clearStudySession,
   getCurrentScenario,
+  getResponseOrders,
+  getScenarioOrder,
   getUnlockedResponse,
   hasStudyAccess,
   isResearcherMode,
@@ -13,6 +15,12 @@ import {
   studySessionKeys,
   writeSessionJson,
 } from '../services/studySession'
+import {
+  abandonStudy,
+  completeStudy,
+  saveResponseRating,
+  StudyApiError,
+} from '../services/studyApi'
 import './RatePage.css'
 
 type ResponseRatingDraft = {
@@ -55,12 +63,15 @@ export function RatePage() {
   const requestedResponseNumber = Number(responseNumber)
   const currentScenarioNumber = getCurrentScenario()
   const unlockedResponse = Math.min(getUnlockedResponse(), responseCount)
-  const scenario = scenarios.find(
-    ({ number }) => number === requestedScenarioNumber,
-  )
+  const orderedScenarios = getScenarioOrder()
+    .map((scenarioId) => scenarios.find(({ id }) => id === scenarioId))
+    .filter((value) => value !== undefined)
+  const scenario = orderedScenarios[requestedScenarioNumber - 1]
   const [rateDrafts, setRateDrafts] = useState<RateDrafts>(() =>
     readSessionJson(studySessionKeys.rateDrafts, {}),
   )
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
     writeSessionJson(studySessionKeys.rateDrafts, rateDrafts)
@@ -76,6 +87,10 @@ export function RatePage() {
 
   if (sessionFlagIsSet(studySessionKeys.studyCompleted)) {
     return <Navigate to={routes.end} replace />
+  }
+
+  if (orderedScenarios.length !== scenarioCount) {
+    return <Navigate to={routes.home} replace />
   }
 
   if (!scenario || requestedScenarioNumber !== currentScenarioNumber) {
@@ -95,21 +110,35 @@ export function RatePage() {
     )
   }
 
-  const response = scenario.possibleResponses[requestedResponseNumber - 1]
-  const draftKey = `scenario-${scenario.number}-response-${requestedResponseNumber}`
+  const responseOrder = getResponseOrders()[scenario.id] ?? []
+  const orderedResponses = responseOrder
+    .map((responseId) =>
+      scenario.possibleResponses.find(({ id }) => id === responseId),
+    )
+    .filter((value) => value !== undefined)
+  const response = orderedResponses[requestedResponseNumber - 1]
+  if (!response || orderedResponses.length !== responseCount) {
+    return <Navigate to={routes.home} replace />
+  }
+
+  const draftKey = `${scenario.id}:${response.id}`
   const draft = rateDrafts[draftKey] ?? emptyDraft()
   const isCurrentResponseComplete = draftIsComplete(draft)
   const areAllResponsesComplete = Array.from(
     { length: responseCount },
     (_, index) =>
-      rateDrafts[`scenario-${scenario.number}-response-${index + 1}`],
+      rateDrafts[
+        `${scenario.id}:${orderedResponses[index]?.id ?? `missing-${index + 1}`}`
+      ],
   ).every(draftIsComplete)
   const canGoForward =
     isResearcherMode() ||
     (requestedResponseNumber === responseCount
       ? areAllResponsesComplete
       : isCurrentResponseComplete)
-  const completedStepCount = 3 + scenario.number
+  const canLeaveCurrentResponse =
+    isResearcherMode() || isCurrentResponseComplete
+  const completedStepCount = 3 + requestedScenarioNumber
 
   const updateDraft = (
     update: (currentDraft: ResponseRatingDraft) => ResponseRatingDraft,
@@ -120,19 +149,57 @@ export function RatePage() {
     }))
   }
 
-  const exitStudy = () => {
-    clearStudySession()
-    navigate(routes.home, { replace: true })
-  }
-
-  const goBack = () => {
-    if (requestedResponseNumber > 1) {
-      navigate(ratePath(scenario.number, requestedResponseNumber - 1))
+  const exitStudy = async () => {
+    try {
+      await abandonStudy()
+    } catch {
+      // Returning home must remain possible if the network is unavailable.
+    } finally {
+      clearStudySession()
+      navigate(routes.home, { replace: true })
     }
   }
 
-  const goForward = () => {
+  const goBack = () => {
+    void saveAndNavigateBack()
+  }
+
+  const persistCurrentRating = async () => {
+    setIsSaving(true)
+    setSaveError('')
+    try {
+      await saveResponseRating({
+        scenarioId: scenario.id,
+        responseId: response.id,
+        scenarioDisplayPosition: requestedScenarioNumber,
+        responseDisplayPosition: requestedResponseNumber,
+        contentVersion: response.contentVersion,
+        ratings: draft.ratings,
+        reason: draft.reason,
+      })
+      return true
+    } catch (error) {
+      setSaveError(
+        error instanceof StudyApiError
+          ? error.message
+          : 'Unable to save your ratings. Please try again.',
+      )
+      return false
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function saveAndNavigateBack() {
+    if (requestedResponseNumber <= 1 || !canLeaveCurrentResponse) return
+    if (await persistCurrentRating()) {
+      navigate(ratePath(requestedScenarioNumber, requestedResponseNumber - 1))
+    }
+  }
+
+  const goForward = async () => {
     if (!canGoForward) return
+    if (!(await persistCurrentRating())) return
 
     if (requestedResponseNumber < responseCount) {
       const nextResponse = requestedResponseNumber + 1
@@ -140,20 +207,32 @@ export function RatePage() {
         studySessionKeys.unlockedResponse,
         String(Math.max(unlockedResponse, nextResponse)),
       )
-      navigate(ratePath(scenario.number, nextResponse))
+      navigate(ratePath(requestedScenarioNumber, nextResponse))
       return
     }
 
-    if (scenario.number < scenarioCount) {
-      const nextScenario = scenario.number + 1
+    if (requestedScenarioNumber < scenarioCount) {
+      const nextScenario = requestedScenarioNumber + 1
       writeSessionValue(studySessionKeys.currentScenario, String(nextScenario))
       writeSessionValue(studySessionKeys.unlockedResponse, '1')
       navigate(scenarioPath(nextScenario), { replace: true })
       return
     }
 
-    writeSessionValue(studySessionKeys.studyCompleted, 'true')
-    navigate(routes.end, { replace: true })
+    setIsSaving(true)
+    try {
+      await completeStudy()
+      writeSessionValue(studySessionKeys.studyCompleted, 'true')
+      navigate(routes.end, { replace: true })
+    } catch (error) {
+      setSaveError(
+        error instanceof StudyApiError
+          ? error.message
+          : 'Unable to submit the study. Please try again.',
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -170,7 +249,7 @@ export function RatePage() {
             />
             <span>SETH LAB</span>
           </Link>
-          <p>SCENARIO {scenario.number} OF {scenarioCount}</p>
+          <p>SCENARIO {requestedScenarioNumber} OF {scenarioCount}</p>
           <button type="button" onClick={exitStudy}>Exit&nbsp; ↗</button>
         </div>
         <ol
@@ -192,7 +271,7 @@ export function RatePage() {
       <section className="rate-subheader" aria-labelledby="rate-scenario-title">
         <div className="rate-subheader__row">
           <div>
-            <p>SCENARIO {scenario.number}</p>
+            <p>SCENARIO {requestedScenarioNumber}</p>
             <h1 id="rate-scenario-title">{scenario.title}</h1>
           </div>
           <div className="rate-response-status">
@@ -202,7 +281,7 @@ export function RatePage() {
                 const dotNumber = index + 1
                 const dotDraft =
                   rateDrafts[
-                    `scenario-${scenario.number}-response-${dotNumber}`
+                    `${scenario.id}:${orderedResponses[dotNumber - 1]?.id ?? `missing-${dotNumber}`}`
                   ]
                 const isCurrent = dotNumber === requestedResponseNumber
                 const isRated = draftIsComplete(dotDraft)
@@ -245,7 +324,7 @@ export function RatePage() {
             </div>
             <div className="message message--agent">
               <span aria-hidden="true">VA</span>
-              <p>{response}</p>
+              <p>{response.text}</p>
             </div>
           </div>
         </article>
@@ -309,8 +388,9 @@ export function RatePage() {
       </section>
 
       <footer className={`rate-footer ${requestedResponseNumber === 1 ? 'rate-footer--first' : ''}`}>
+        {saveError && <p className="rate-save-error" role="alert">{saveError}</p>}
         {requestedResponseNumber > 1 && (
-          <button className="rate-button rate-button--back" type="button" onClick={goBack}>
+          <button className="rate-button rate-button--back" type="button" onClick={goBack} disabled={!canLeaveCurrentResponse || isSaving}>
             ←&nbsp; Previous Response
           </button>
         )}
@@ -318,11 +398,13 @@ export function RatePage() {
           className="rate-button rate-button--continue"
           type="button"
           onClick={goForward}
-          disabled={!canGoForward}
+          disabled={!canGoForward || isSaving}
         >
-          {requestedResponseNumber === responseCount
-            ? 'Submit Ratings →'
-            : 'Next Response →'}
+          {isSaving
+            ? 'Saving…'
+            : requestedResponseNumber === responseCount
+              ? 'Submit Ratings →'
+              : 'Next Response →'}
         </button>
       </footer>
     </main>
