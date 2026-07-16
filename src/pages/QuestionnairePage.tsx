@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { questionnaireCount, questionnaires } from '../data/questionnaires'
-import { questionnairePath, routes } from '../config/routes'
+import { questionnairePath, routes, scenarioPath } from '../config/routes'
+import { studySessionKeys } from '../services/studySession'
 import './QuestionnairePage.css'
 
 const legacyAnswerStorageKeys = [
   'empathetic-llms-study:questionnaire-answers',
   'empathetic-llms-study:questionnaire-answers:v2',
 ]
-const answerStorageKey = 'empathetic-llms-study:questionnaire-answers:session'
-const questionnaireFlowLockKey = 'empathetic-llms-study:questionnaires-completed'
+const answerStorageKey = studySessionKeys.questionnaireAnswers
+const questionnaireFlowLockKey = studySessionKeys.questionnairesCompleted
 
 type QuestionnaireAnswers = Record<string, number>
 
@@ -54,7 +55,7 @@ export function QuestionnairePage() {
   }, [answers])
 
   if (isQuestionnaireFlowLocked()) {
-    return <Navigate to={routes.scenarioIntroduction} replace />
+    return <Navigate to={scenarioPath(1)} replace />
   }
 
   if (!questionnaire) {
@@ -84,10 +85,11 @@ export function QuestionnairePage() {
     if (currentNumber === questionnaireCount) {
       try {
         sessionStorage.setItem(questionnaireFlowLockKey, 'true')
+        sessionStorage.setItem(studySessionKeys.currentScenario, '1')
       } catch {
         // Navigation still works if browser storage is unavailable.
       }
-      navigate(routes.scenarioIntroduction, { replace: true })
+      navigate(scenarioPath(1), { replace: true })
       return
     }
 
