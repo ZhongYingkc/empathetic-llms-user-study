@@ -21,7 +21,7 @@ function App() {
           element={
             <main className="route-placeholder">
               <p>Scenario pages will be implemented next.</p>
-              <Link to={questionnairePath(3)}>Return to Questionnaire 3</Link>
+              <Link to={routes.home}>Return home</Link>
             </main>
           }
         />

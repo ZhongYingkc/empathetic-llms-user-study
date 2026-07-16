@@ -262,14 +262,21 @@
   background: var(--color-accent-yellow);
 }
 
-.questionnaire-button:hover {
+.questionnaire-button:not(:disabled):hover {
   box-shadow: 2px 2px 0 var(--color-ink);
   transform: translate(-1px, -1px);
 }
 
-.questionnaire-button:active {
+.questionnaire-button:not(:disabled):active {
   box-shadow: none;
   transform: translate(0, 0);
+}
+
+.questionnaire-button:disabled {
+  border-color: var(--color-border);
+  color: var(--color-muted);
+  background: #f6f8fb;
+  cursor: not-allowed;
 }
 
 .questionnaire-button:focus-visible {

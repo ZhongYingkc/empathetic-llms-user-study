@@ -4,13 +4,19 @@ import { questionnaireCount, questionnaires } from '../data/questionnaires'
 import { questionnairePath, routes } from '../config/routes'
 import './QuestionnairePage.css'
 
-const answerStorageKey = 'empathetic-llms-study:questionnaire-answers:v2'
+const legacyAnswerStorageKeys = [
+  'empathetic-llms-study:questionnaire-answers',
+  'empathetic-llms-study:questionnaire-answers:v2',
+]
+const answerStorageKey = 'empathetic-llms-study:questionnaire-answers:session'
+const questionnaireFlowLockKey = 'empathetic-llms-study:questionnaires-completed'
 
 type QuestionnaireAnswers = Record<string, number>
 
 function loadAnswers(): QuestionnaireAnswers {
   try {
-    const storedAnswers = localStorage.getItem(answerStorageKey)
+    legacyAnswerStorageKeys.forEach((key) => localStorage.removeItem(key))
+    const storedAnswers = sessionStorage.getItem(answerStorageKey)
     if (!storedAnswers) return {}
 
     const parsedAnswers: unknown = JSON.parse(storedAnswers)
@@ -19,6 +25,14 @@ function loadAnswers(): QuestionnaireAnswers {
       : {}
   } catch {
     return {}
+  }
+}
+
+function isQuestionnaireFlowLocked(): boolean {
+  try {
+    return sessionStorage.getItem(questionnaireFlowLockKey) === 'true'
+  } catch {
+    return false
   }
 }
 
@@ -32,8 +46,16 @@ export function QuestionnairePage() {
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(loadAnswers)
 
   useEffect(() => {
-    localStorage.setItem(answerStorageKey, JSON.stringify(answers))
+    try {
+      sessionStorage.setItem(answerStorageKey, JSON.stringify(answers))
+    } catch {
+      // The questionnaire remains usable if browser storage is unavailable.
+    }
   }, [answers])
+
+  if (isQuestionnaireFlowLocked()) {
+    return <Navigate to={routes.scenarioIntroduction} replace />
+  }
 
   if (!questionnaire) {
     return <Navigate to={questionnairePath(1)} replace />
@@ -44,6 +66,9 @@ export function QuestionnairePage() {
     (_, index) => index + 1,
   )
   const scaleGrid = `minmax(0, 1fr) repeat(${questionnaire.scaleMax}, 54px)`
+  const isQuestionnaireComplete = questionnaire.items.every(
+    (item) => answers[item.id] !== undefined,
+  )
 
   const goBack = () => {
     navigate(
@@ -54,10 +79,20 @@ export function QuestionnairePage() {
   }
 
   const goForward = () => {
+    if (!isQuestionnaireComplete) return
+
+    if (currentNumber === questionnaireCount) {
+      try {
+        sessionStorage.setItem(questionnaireFlowLockKey, 'true')
+      } catch {
+        // Navigation still works if browser storage is unavailable.
+      }
+      navigate(routes.scenarioIntroduction, { replace: true })
+      return
+    }
+
     navigate(
-      currentNumber === questionnaireCount
-        ? routes.scenarioIntroduction
-        : questionnairePath(currentNumber + 1),
+      questionnairePath(currentNumber + 1),
     )
   }
 
@@ -174,8 +209,13 @@ export function QuestionnairePage() {
         <button className="questionnaire-button questionnaire-button--back" type="button" onClick={goBack}>
           ←&nbsp; Back
         </button>
-        <button className="questionnaire-button questionnaire-button--continue" type="button" onClick={goForward}>
-          Continue&nbsp; →
+        <button
+          className="questionnaire-button questionnaire-button--continue"
+          type="button"
+          onClick={goForward}
+          disabled={!isQuestionnaireComplete}
+        >
+          {currentNumber === questionnaireCount ? 'Scenario' : 'Continue'}&nbsp; →
         </button>
       </footer>
     </main>
