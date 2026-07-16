@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { questionnairePath, scenarioPath } from '../config/routes'
 import {
   getCurrentScenario,
+  hasStudyAccess,
   studySessionKeys,
 } from '../services/studySession'
 import './EndPage.css'
@@ -15,6 +16,10 @@ function sessionFlagIsSet(key: string): boolean {
 }
 
 export function EndPage() {
+  if (!hasStudyAccess()) {
+    return <Navigate to="/" replace />
+  }
+
   if (!sessionFlagIsSet(studySessionKeys.studyCompleted)) {
     return sessionFlagIsSet(studySessionKeys.questionnairesCompleted) ? (
       <Navigate to={scenarioPath(getCurrentScenario())} replace />

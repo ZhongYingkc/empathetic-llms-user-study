@@ -1,10 +1,42 @@
-import { Link } from 'react-router-dom'
+import { type FormEvent, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { studyAccessCodes } from '../config/access'
 import { routes } from '../config/routes'
+import {
+  clearStudySession,
+  setStudyAccessMode,
+  type StudyAccessMode,
+} from '../services/studySession'
 import './HomePage.css'
 
 const studyDetails = ['≈ 20–30 MINUTES', '4 SCENARIOS', 'ANONYMOUS']
 
 export function HomePage() {
+  const navigate = useNavigate()
+  const [accessCode, setAccessCode] = useState('')
+  const [accessError, setAccessError] = useState('')
+
+  const startStudy = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const normalizedCode = accessCode.trim().toUpperCase()
+    let accessMode: StudyAccessMode | null = null
+
+    if (normalizedCode === studyAccessCodes.participant) {
+      accessMode = 'participant'
+    } else if (normalizedCode === studyAccessCodes.researcher) {
+      accessMode = 'researcher'
+    }
+
+    if (!accessMode) {
+      setAccessError('Please enter a valid access code.')
+      return
+    }
+
+    clearStudySession()
+    setStudyAccessMode(accessMode)
+    navigate(routes.questionnaire)
+  }
+
   return (
     <main className="home-page" aria-labelledby="home-title">
       <p className="home-page__study-label">A SETH LAB STUDY</p>
@@ -33,9 +65,30 @@ export function HomePage() {
           ))}
         </ul>
 
-        <Link className="home-page__start" to={routes.questionnaire}>
-          Get started&nbsp;&nbsp;→
-        </Link>
+        <form className="home-page__access" onSubmit={startStudy} noValidate>
+          <label htmlFor="study-access-code">ACCESS CODE</label>
+          <input
+            id="study-access-code"
+            type="text"
+            value={accessCode}
+            onChange={(event) => {
+              setAccessCode(event.target.value)
+              if (accessError) setAccessError('')
+            }}
+            placeholder="Enter your code"
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck="false"
+            aria-describedby="study-access-error"
+            aria-invalid={Boolean(accessError)}
+          />
+          <p id="study-access-error" className="home-page__access-error" role="alert">
+            {accessError}
+          </p>
+          <button className="home-page__start" type="submit" disabled={!accessCode.trim()}>
+            Get started&nbsp;&nbsp;→
+          </button>
+        </form>
       </section>
 
       <p className="home-page__privacy-note">

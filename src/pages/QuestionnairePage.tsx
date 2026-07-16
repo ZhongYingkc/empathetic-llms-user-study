@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { questionnaireCount, questionnaires } from '../data/questionnaires'
 import { questionnairePath, routes, scenarioPath } from '../config/routes'
-import { studySessionKeys } from '../services/studySession'
+import {
+  clearStudySession,
+  hasStudyAccess,
+  isResearcherMode,
+  studySessionKeys,
+} from '../services/studySession'
 import './QuestionnairePage.css'
 
 const legacyAnswerStorageKeys = [
@@ -54,6 +59,10 @@ export function QuestionnairePage() {
     }
   }, [answers])
 
+  if (!hasStudyAccess()) {
+    return <Navigate to={routes.home} replace />
+  }
+
   if (isQuestionnaireFlowLocked()) {
     return <Navigate to={scenarioPath(1)} replace />
   }
@@ -66,10 +75,15 @@ export function QuestionnairePage() {
     { length: questionnaire.scaleMax },
     (_, index) => index + 1,
   )
-  const scaleGrid = `minmax(0, 1fr) repeat(${questionnaire.scaleMax}, 54px)`
-  const isQuestionnaireComplete = questionnaire.items.every(
-    (item) => answers[item.id] !== undefined,
-  )
+  const scaleGrid = `repeat(${questionnaire.scaleMax}, 54px)`
+  const isQuestionnaireComplete =
+    isResearcherMode() ||
+    questionnaire.items.every((item) => answers[item.id] !== undefined)
+
+  const exitStudy = () => {
+    clearStudySession()
+    navigate(routes.home, { replace: true })
+  }
 
   const goBack = () => {
     navigate(
@@ -121,9 +135,9 @@ export function QuestionnairePage() {
             Questionnaire {currentNumber} OF {questionnaireCount}
           </p>
 
-          <Link className="questionnaire-header__exit" to={routes.home}>
+          <button className="questionnaire-header__exit" type="button" onClick={exitStudy}>
             Exit&nbsp; ↗
-          </Link>
+          </button>
         </div>
 
         <ol
@@ -156,20 +170,23 @@ export function QuestionnairePage() {
 
           <div
             className="rating-box__scale-header"
-            style={{ gridTemplateColumns: scaleGrid }}
             aria-hidden="true"
           >
-            <span />
-            {scaleValues.map((value) => (
-              <span key={value}>{value}</span>
-            ))}
+            <span className="rating-box__scale-spacer" />
+            <div
+              className="rating-box__scale-numbers"
+              style={{ gridTemplateColumns: scaleGrid }}
+            >
+              {scaleValues.map((value) => (
+                <span key={value}>{value}</span>
+              ))}
+            </div>
           </div>
 
           <div className="rating-box__body">
             {questionnaire.items.map((item) => (
               <div
                 className="likert-item"
-                style={{ gridTemplateColumns: scaleGrid }}
                 key={item.id}
               >
                 <p id={`${item.id}-prompt`}>{item.prompt}</p>
@@ -177,9 +194,7 @@ export function QuestionnairePage() {
                   className="likert-item__scale"
                   role="radiogroup"
                   aria-labelledby={`${item.id}-prompt`}
-                  style={{
-                    gridTemplateColumns: `repeat(${questionnaire.scaleMax}, 54px)`,
-                  }}
+                  style={{ gridTemplateColumns: scaleGrid }}
                 >
                   {scaleValues.map((value) => (
                     <label key={value}>

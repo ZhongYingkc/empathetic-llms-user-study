@@ -90,11 +90,59 @@
   letter-spacing: 0;
 }
 
+.home-page__access {
+  display: flex;
+  margin-top: 30px;
+  align-items: center;
+  flex-direction: column;
+}
+
+.home-page__access label {
+  margin-bottom: 8px;
+  font-family: "Geist Mono", monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+.home-page__access input {
+  width: 260px;
+  height: 46px;
+  padding: 0 15px;
+  border: 1.5px solid var(--color-ink);
+  border-radius: 8px;
+  outline: none;
+  color: var(--color-ink);
+  background: rgba(255, 255, 255, 0.82);
+  font-family: "Geist Mono", monospace;
+  font-size: 14px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.home-page__access input:focus {
+  border-color: var(--color-accent-blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-blue) 25%, transparent);
+}
+
+.home-page__access input[aria-invalid="true"] {
+  border-color: #b42318;
+}
+
+.home-page__access-error {
+  min-height: 16px;
+  margin: 7px 0 0;
+  color: #b42318;
+  font-family: "Geist Mono", monospace;
+  font-size: 11px;
+  line-height: 16px;
+}
+
 .home-page__start {
   display: flex;
   width: 158px;
   min-height: 48px;
-  margin-top: 46px;
+  margin-top: 10px;
   padding: 0 13px 0 20px;
   align-items: center;
   justify-content: center;
@@ -107,20 +155,20 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
-  text-decoration: none;
+  cursor: pointer;
   transition:
     transform 140ms ease,
     box-shadow 140ms ease,
     background-color 140ms ease;
 }
 
-.home-page__start:hover {
+.home-page__start:not(:disabled):hover {
   background: var(--color-accent-yellow);
   box-shadow: 4px 4px 0 var(--color-ink);
   transform: translate(-2px, -2px);
 }
 
-.home-page__start:active {
+.home-page__start:not(:disabled):active {
   box-shadow: 1px 1px 0 var(--color-ink);
   transform: translate(1px, 1px);
 }
@@ -128,6 +176,14 @@
 .home-page__start:focus-visible {
   outline: 3px solid var(--color-accent-blue);
   outline-offset: 5px;
+}
+
+.home-page__start:disabled {
+  border-color: var(--color-chip-border);
+  color: var(--color-muted);
+  background: #f6f8fb;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .home-page__privacy-note {

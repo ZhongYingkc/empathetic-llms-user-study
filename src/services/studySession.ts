@@ -1,6 +1,7 @@
 const sessionPrefix = 'empathetic-llms-study:'
 
 export const studySessionKeys = {
+  accessMode: `${sessionPrefix}access-mode`,
   questionnaireAnswers: `${sessionPrefix}questionnaire-answers:session`,
   questionnairesCompleted: `${sessionPrefix}questionnaires-completed`,
   currentScenario: `${sessionPrefix}current-scenario`,
@@ -9,6 +10,33 @@ export const studySessionKeys = {
   rateDrafts: `${sessionPrefix}rate-drafts`,
   studyCompleted: `${sessionPrefix}study-completed`,
 } as const
+
+export type StudyAccessMode = 'participant' | 'researcher'
+
+export function setStudyAccessMode(mode: StudyAccessMode): void {
+  try {
+    sessionStorage.setItem(studySessionKeys.accessMode, mode)
+  } catch {
+    // Access cannot persist if browser storage is unavailable.
+  }
+}
+
+export function hasStudyAccess(): boolean {
+  try {
+    const accessMode = sessionStorage.getItem(studySessionKeys.accessMode)
+    return accessMode === 'participant' || accessMode === 'researcher'
+  } catch {
+    return false
+  }
+}
+
+export function isResearcherMode(): boolean {
+  try {
+    return sessionStorage.getItem(studySessionKeys.accessMode) === 'researcher'
+  } catch {
+    return false
+  }
+}
 
 export function readSessionJson<T>(key: string, fallback: T): T {
   try {

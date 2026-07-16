@@ -61,8 +61,13 @@
 }
 
 .questionnaire-header__exit {
+  padding: 0;
   justify-self: end;
+  border: 0;
   color: var(--color-muted);
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
   text-decoration: none;
 }
 
@@ -143,20 +148,32 @@
   line-height: 1;
 }
 
-.rating-box__scale-header,
-.likert-item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(7, 54px);
-}
-
 .rating-box__scale-header {
+  display: flex;
   height: 30px;
-  margin: 0 26px;
+  padding: 0 34px 0 26px;
   align-items: center;
   font-family: "Geist Mono", monospace;
   font-size: 13px;
   font-weight: 500;
   text-align: center;
+}
+
+.rating-box__scale-spacer {
+  min-width: 0;
+  flex: 1;
+}
+
+.rating-box__scale-numbers {
+  display: grid;
+  flex: 0 0 auto;
+}
+
+.rating-box__scale-numbers span {
+  display: grid;
+  width: 54px;
+  height: 30px;
+  place-items: center;
 }
 
 .rating-box__body {
@@ -165,11 +182,22 @@
   padding: 0 26px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   scrollbar-color: var(--color-border) transparent;
   scrollbar-width: thin;
 }
 
+.rating-box__body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rating-box__body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--color-border);
+}
+
 .likert-item {
+  display: flex;
   min-height: 59px;
   padding: 13px 0;
   align-items: center;
@@ -180,7 +208,8 @@
 .likert-item > p {
   margin: 0;
   padding-right: 20px;
-  grid-column: 1;
+  min-width: 0;
+  flex: 1;
   font-family: "Radio Canada Big", sans-serif;
   font-size: 16px;
   font-weight: 400;
@@ -189,9 +218,7 @@
 
 .likert-item__scale {
   display: grid;
-  grid-column: 2 / -1;
-  grid-row: 1;
-  grid-template-columns: repeat(7, 54px);
+  flex: 0 0 auto;
   align-items: center;
 }
 

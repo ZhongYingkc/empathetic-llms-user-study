@@ -5,6 +5,8 @@ import { questionnairePath, ratePath, routes, scenarioPath } from '../config/rou
 import {
   clearStudySession,
   getCurrentScenario,
+  hasStudyAccess,
+  isResearcherMode,
   readSessionJson,
   studySessionKeys,
   writeSessionJson,
@@ -40,6 +42,10 @@ export function ScenarioPage() {
     writeSessionJson(studySessionKeys.scenarioPrompts, prompts)
   }, [prompts])
 
+  if (!hasStudyAccess()) {
+    return <Navigate to={routes.home} replace />
+  }
+
   if (!questionnairesAreComplete()) {
     return <Navigate to={questionnairePath(1)} replace />
   }
@@ -50,7 +56,7 @@ export function ScenarioPage() {
 
   const promptKey = `scenario-${scenario.number}`
   const prompt = prompts[promptKey] ?? ''
-  const canContinue = prompt.trim().length > 0
+  const canContinue = isResearcherMode() || prompt.trim().length > 0
   const completedStepCount = 3 + scenario.number
 
   const exitStudy = () => {

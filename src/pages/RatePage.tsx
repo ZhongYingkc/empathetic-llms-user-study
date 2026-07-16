@@ -7,6 +7,8 @@ import {
   clearStudySession,
   getCurrentScenario,
   getUnlockedResponse,
+  hasStudyAccess,
+  isResearcherMode,
   readSessionJson,
   studySessionKeys,
   writeSessionJson,
@@ -64,6 +66,10 @@ export function RatePage() {
     writeSessionJson(studySessionKeys.rateDrafts, rateDrafts)
   }, [rateDrafts])
 
+  if (!hasStudyAccess()) {
+    return <Navigate to={routes.home} replace />
+  }
+
   if (!sessionFlagIsSet(studySessionKeys.questionnairesCompleted)) {
     return <Navigate to={questionnairePath(1)} replace />
   }
@@ -99,9 +105,10 @@ export function RatePage() {
       rateDrafts[`scenario-${scenario.number}-response-${index + 1}`],
   ).every(draftIsComplete)
   const canGoForward =
-    requestedResponseNumber === responseCount
+    isResearcherMode() ||
+    (requestedResponseNumber === responseCount
       ? areAllResponsesComplete
-      : isCurrentResponseComplete
+      : isCurrentResponseComplete)
   const completedStepCount = 3 + scenario.number
 
   const updateDraft = (
