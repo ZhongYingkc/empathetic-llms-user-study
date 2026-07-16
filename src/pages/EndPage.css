@@ -1,0 +1,115 @@
+.end-page {
+  --color-ink: #0a0a0a;
+  --color-muted: #6c6c6c;
+  --color-border: #dbe0ec;
+  --color-accent-blue: #2683eb;
+
+  min-width: 1024px;
+  min-height: 808px;
+  height: 100vh;
+  padding: 60px 40px;
+  overflow: hidden;
+  color: var(--color-ink);
+  background: linear-gradient(180deg, #a8d3ff 0%, #fff4df 100%);
+}
+
+.end-page__header {
+  width: min(1200px, calc(100vw - 80px));
+  height: 17px;
+  margin: 0 auto;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 17px;
+  text-align: right;
+}
+
+.end-page__hero {
+  display: flex;
+  width: min(1200px, calc(100vw - 80px));
+  height: 528px;
+  margin: 60px auto 0;
+  align-items: center;
+  flex-direction: column;
+  gap: 25px;
+  text-align: center;
+}
+
+.end-page__logo {
+  display: block;
+  width: 100px;
+  height: 100px;
+  border-radius: 14px;
+  object-fit: contain;
+}
+
+.end-page__spacer {
+  width: 10px;
+  height: 4px;
+  flex: 0 0 auto;
+}
+
+.end-page h1,
+.end-page h2,
+.end-page p {
+  margin: 0;
+}
+
+.end-page h1 {
+  height: 80px;
+  font-family: "Source Serif Pro", serif;
+  font-size: 80px;
+  font-weight: 400;
+  letter-spacing: -3.2px;
+  line-height: 1;
+}
+
+.end-page h2 {
+  width: min(820px, 70vw);
+  height: 42px;
+  font-family: "Radio Canada Big", sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -1px;
+  line-height: 42px;
+}
+
+.end-page__message {
+  width: 640px;
+  min-height: 81px;
+  color: var(--color-muted);
+  font-family: "Source Serif Pro", serif;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.end-page__summary {
+  display: flex;
+  height: 33px;
+  align-items: center;
+  gap: 12px;
+}
+
+.end-page__summary span {
+  display: flex;
+  height: 33px;
+  padding: 0 14px;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-accent-blue);
+  background: #fff;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.end-page__close-note {
+  width: 422px;
+  min-height: 38px;
+  color: var(--color-muted);
+  font-family: "Geist Mono", monospace;
+  font-size: 12px;
+  line-height: 1.6;
+}
+

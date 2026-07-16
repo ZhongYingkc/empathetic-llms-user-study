@@ -1,5 +1,6 @@
-import { HashRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { questionnairePath, routes, scenarioPath } from './config/routes'
+import { EndPage } from './pages/EndPage'
 import { HomePage } from './pages/HomePage'
 import { QuestionnairePage } from './pages/QuestionnairePage'
 import { RatePage } from './pages/RatePage'
@@ -36,12 +37,7 @@ function App() {
         />
         <Route
           path={routes.end}
-          element={
-            <main className="route-placeholder">
-              <p>Thank you. You have completed the study.</p>
-              <Link to={routes.home}>Return home</Link>
-            </main>
-          }
+          element={<EndPage />}
         />
       </Routes>
     </HashRouter>
