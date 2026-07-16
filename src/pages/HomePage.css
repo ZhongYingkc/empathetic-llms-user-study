@@ -105,6 +105,12 @@
   letter-spacing: 1px;
 }
 
+.home-page__access-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
 .home-page__access input {
   width: 260px;
   height: 46px;
@@ -148,7 +154,7 @@
   display: flex;
   width: 158px;
   min-height: 48px;
-  margin-top: 12px;
+  margin: 0;
   padding: 0 13px 0 20px;
   align-items: center;
   justify-content: center;

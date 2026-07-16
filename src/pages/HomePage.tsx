@@ -5,7 +5,7 @@ import { createStudySession, StudyApiError } from '../services/studyApi'
 import { initializeStudySession } from '../services/studySession'
 import './HomePage.css'
 
-const studyDetails = ['≈ 20–30 MINUTES', '4 SCENARIOS', 'ANONYMOUS']
+const studyDetails = ['≈ 30~40 MINUTES', '4 SCENARIOS', 'ANONYMOUS']
 const turnstileSiteKey =
   import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '0x4AAAAAAD3XDROrQZpCr3BD'
 
@@ -127,21 +127,30 @@ export function HomePage() {
 
         <form className="home-page__access" onSubmit={startStudy} noValidate>
           <label htmlFor="study-access-code">ACCESS CODE</label>
-          <input
-            id="study-access-code"
-            type="text"
-            value={accessCode}
-            onChange={(event) => {
-              setAccessCode(event.target.value)
-              if (accessError) setAccessError('')
-            }}
-            placeholder="Enter your code"
-            autoComplete="off"
-            autoCapitalize="characters"
-            spellCheck="false"
-            aria-describedby="study-access-error"
-            aria-invalid={Boolean(accessError)}
-          />
+          <div className="home-page__access-row">
+            <input
+              id="study-access-code"
+              type="text"
+              value={accessCode}
+              onChange={(event) => {
+                setAccessCode(event.target.value)
+                if (accessError) setAccessError('')
+              }}
+              placeholder="Enter your code"
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck="false"
+              aria-describedby="study-access-error"
+              aria-invalid={Boolean(accessError)}
+            />
+            <button
+              className="home-page__start"
+              type="submit"
+              disabled={!accessCode.trim() || !turnstileToken || isStarting}
+            >
+              {isStarting ? 'Starting…' : 'Get started  →'}
+            </button>
+          </div>
           <p id="study-access-error" className="home-page__access-error" role="alert">
             {accessError}
           </p>
@@ -150,13 +159,6 @@ export function HomePage() {
             ref={turnstileContainerRef}
             aria-label="Security verification"
           />
-          <button
-            className="home-page__start"
-            type="submit"
-            disabled={!accessCode.trim() || !turnstileToken || isStarting}
-          >
-            {isStarting ? 'Starting…' : 'Get started  →'}
-          </button>
         </form>
       </section>
 
