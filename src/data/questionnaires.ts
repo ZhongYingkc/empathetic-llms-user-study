@@ -3,6 +3,7 @@ type QuestionnaireDefinition = {
   name: string
   eyebrow: string
   title: string
+  scaleMin: number
   scaleMax: number
   items: Array<{
     id: string
@@ -70,7 +71,8 @@ export const questionnaires: QuestionnaireDefinition[] = [
     name: 'Relationship Structures Questionnaire',
     eyebrow: 'PRE-STUDY QUESTIONNAIRE',
     title: 'QUESTIONNAIRE 1',
-    scaleMax: 5,
+    scaleMin: 0,
+    scaleMax: 6,
     items: createItems(1, relationshipStructuresItems),
   },
   {
@@ -78,7 +80,8 @@ export const questionnaires: QuestionnaireDefinition[] = [
     name: 'Basic Empathy Scale',
     eyebrow: 'PRE-STUDY QUESTIONNAIRE',
     title: 'QUESTIONNAIRE 2',
-    scaleMax: 7,
+    scaleMin: 0,
+    scaleMax: 4,
     items: createItems(2, basicEmpathyItems),
   },
   {
@@ -86,10 +89,10 @@ export const questionnaires: QuestionnaireDefinition[] = [
     name: 'Emotion Regulation Questionnaire',
     eyebrow: 'PRE-STUDY QUESTIONNAIRE',
     title: 'QUESTIONNAIRE 3',
-    scaleMax: 7,
+    scaleMin: 0,
+    scaleMax: 6,
     items: createItems(3, emotionRegulationItems),
   },
 ]
 
 export const questionnaireCount = questionnaires.length
-

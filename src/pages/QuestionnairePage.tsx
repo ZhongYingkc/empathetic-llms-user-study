@@ -79,17 +79,25 @@ export function QuestionnairePage() {
   }
 
   const scaleValues = Array.from(
-    { length: questionnaire.scaleMax },
-    (_, index) => index + 1,
+    { length: questionnaire.scaleMax - questionnaire.scaleMin + 1 },
+    (_, index) => questionnaire.scaleMin + index,
   )
-  const scaleGrid = `repeat(${questionnaire.scaleMax}, 54px)`
+  const scaleGrid = `repeat(${scaleValues.length}, 54px)`
+  const answerIsValid = (itemId: string) => {
+    const value = answers[itemId]
+    return (
+      Number.isInteger(value) &&
+      value >= questionnaire.scaleMin &&
+      value <= questionnaire.scaleMax
+    )
+  }
   const isQuestionnaireComplete =
     isResearcherMode() ||
-    questionnaire.items.every((item) => answers[item.id] !== undefined)
+    questionnaire.items.every((item) => answerIsValid(item.id))
 
   const currentAnswers = Object.fromEntries(
     questionnaire.items.flatMap((item) =>
-      answers[item.id] === undefined ? [] : [[item.id, answers[item.id]]],
+      answerIsValid(item.id) ? [[item.id, answers[item.id]]] : [],
     ),
   )
 
@@ -203,7 +211,7 @@ export function QuestionnairePage() {
           <div className="rating-box__section-heading">
             <h1 id="questionnaire-title">{questionnaire.title}</h1>
             <p>
-              1 = Strongly disagree&nbsp;&nbsp; · &nbsp;&nbsp;
+              {questionnaire.scaleMin} = Strongly disagree&nbsp;&nbsp; · &nbsp;&nbsp;
               {questionnaire.scaleMax} = Strongly agree
             </p>
           </div>
@@ -251,7 +259,8 @@ export function QuestionnairePage() {
                         }
                       />
                       <span className="visually-hidden">
-                        {value} out of {questionnaire.scaleMax}
+                        {value} on a scale from {questionnaire.scaleMin} to{' '}
+                        {questionnaire.scaleMax}
                       </span>
                     </label>
                   ))}

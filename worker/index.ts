@@ -34,12 +34,12 @@ const allowedOrigins = new Set([
 ])
 
 const productionHostname = 'zhongyingkc.github.io'
-const studyVersion = '2026-07-16'
+const studyVersion = '2026-07-18'
 const scenarioIds = ['S01', 'S02', 'S03', 'S04'] as const
 const questionnaireRules = {
-  'questionnaire-1': { itemCount: 9, min: 1, max: 5 },
-  'questionnaire-2': { itemCount: 20, min: 1, max: 7 },
-  'questionnaire-3': { itemCount: 10, min: 1, max: 7 },
+  'questionnaire-1': { itemCount: 9, min: 0, max: 6 },
+  'questionnaire-2': { itemCount: 20, min: 0, max: 4 },
+  'questionnaire-3': { itemCount: 10, min: 0, max: 6 },
 } as const
 const ratingItemIds = Array.from(
   { length: 13 },
