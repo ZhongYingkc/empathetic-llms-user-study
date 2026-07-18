@@ -2,4 +2,5 @@ TURNSTILE_SECRET_KEY="use-a-cloudflare-turnstile-test-secret-locally"
 PARTICIPANT_ACCESS_CODE="EAI"
 RESEARCHER_ACCESS_CODE="CHI2027"
 SESSION_SIGNING_SECRET="replace-with-at-least-32-random-characters"
-
+REDCAP_API_URL="https://redcap.example.edu/api/"
+REDCAP_API_TOKEN="replace-with-your-redcap-api-token"

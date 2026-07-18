@@ -18,4 +18,20 @@ interface D1Database {
 
 interface ExportedHandler<Env = unknown> {
   fetch(request: Request, env: Env): Response | Promise<Response>
+  scheduled?(
+    controller: ScheduledController,
+    env: Env,
+    context: ExecutionContext,
+  ): void | Promise<void>
+}
+
+interface ScheduledController {
+  cron: string
+  scheduledTime: number
+  noRetry(): void
+}
+
+interface ExecutionContext {
+  waitUntil(promise: Promise<unknown>): void
+  passThroughOnException(): void
 }

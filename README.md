@@ -11,6 +11,7 @@ rating explanations.
 - Cloudflare Worker API
 - Cloudflare D1 production and researcher-test databases
 - Cloudflare Turnstile verification
+- Nightly REDCap batch synchronization at 11:00 PM Eastern
 - Session-scoped browser drafts; D1 is the durable source of truth
 - Zod validation in both the browser-facing domain and Worker request boundary
 
@@ -39,6 +40,8 @@ the browser bundle.
    - `PARTICIPANT_ACCESS_CODE`
    - `RESEARCHER_ACCESS_CODE`
    - `SESSION_SIGNING_SECRET`
+   - `REDCAP_API_URL`
+   - `REDCAP_API_TOKEN`
 
 4. Apply the same migration to both databases:
 
@@ -69,6 +72,10 @@ bytes. `.dev.vars` is ignored by Git and may be created from
 - Each page is validated and saved before navigation continues.
 - The final submission is accepted only after the Worker verifies the complete
   participant dataset.
+- Completed participant sessions are queued in D1 and uploaded to REDCap in one
+  nightly batch at 11:00 PM America/Indiana/Indianapolis time. Failed batches
+  remain queued and retry the next night.
+- Researcher sessions remain in `TEST_DB` and are never sent to REDCap.
 - Exit deletes an incomplete backend session and clears the browser session.
 
 ## Project layout

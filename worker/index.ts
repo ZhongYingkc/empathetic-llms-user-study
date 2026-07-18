@@ -1,4 +1,8 @@
 import { z } from 'zod'
+import {
+  isElevenPmEastern,
+  syncPendingSessionsToRedcap,
+} from './redcap'
 
 type AccessMode = 'participant' | 'researcher'
 
@@ -9,6 +13,8 @@ interface Env {
   PARTICIPANT_ACCESS_CODE: string
   RESEARCHER_ACCESS_CODE: string
   SESSION_SIGNING_SECRET: string
+  REDCAP_API_URL: string
+  REDCAP_API_TOKEN: string
 }
 
 type SessionTokenPayload = {
@@ -595,14 +601,28 @@ async function handleCompleteStudy(
   }
 
   const now = new Date().toISOString()
-  await authenticated.database
+  const completeSession = authenticated.database
     .prepare(
       `UPDATE study_sessions
        SET status = 'completed', completed_at = ?, updated_at = ?
        WHERE id = ?`,
     )
     .bind(now, now, sessionId)
-    .run()
+  if (authenticated.payload.accessMode === 'participant') {
+    await authenticated.database.batch([
+      completeSession,
+      authenticated.database
+        .prepare(
+          `INSERT INTO redcap_sync_jobs
+           (session_id, status, attempt_count, created_at, updated_at)
+           VALUES (?, 'pending', 0, ?, ?)
+           ON CONFLICT(session_id) DO NOTHING`,
+        )
+        .bind(sessionId, now, now),
+    ])
+  } else {
+    await completeSession.run()
+  }
   return json(request, { completed: true })
 }
 
@@ -711,5 +731,17 @@ export default {
       console.error(error)
       return json(request, { error: 'Unable to process the request.' }, 500)
     }
+  },
+  scheduled(
+    controller: ScheduledController,
+    env: Env,
+    context: ExecutionContext,
+  ): void {
+    if (!isElevenPmEastern(controller.scheduledTime)) return
+    context.waitUntil(
+      syncPendingSessionsToRedcap(env).then((sessionCount) => {
+        console.log(`REDCap nightly sync completed for ${sessionCount} sessions.`)
+      }),
+    )
   },
 } satisfies ExportedHandler<Env>
