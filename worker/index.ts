@@ -40,7 +40,7 @@ const allowedOrigins = new Set([
 ])
 
 const productionHostname = 'zhongyingkc.github.io'
-const studyVersion = '2026-07-18'
+const studyVersion = '2026-07-19'
 const scenarioIds = ['S01', 'S02', 'S03', 'S04'] as const
 const questionnaireRules = {
   'questionnaire-1': { itemCount: 9, min: 0, max: 6 },
