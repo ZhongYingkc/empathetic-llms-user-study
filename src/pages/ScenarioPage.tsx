@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { scenarioCount, scenarios } from '../data/scenarios'
 import { questionnairePath, ratePath, routes, scenarioPath } from '../config/routes'
@@ -20,6 +20,17 @@ import {
 import './ScenarioPage.css'
 
 type ScenarioPrompts = Record<string, string>
+
+const promptTextareaMinHeight = 57
+const promptTextareaMaxHeight = 89
+
+function resizePromptTextarea(textarea: HTMLTextAreaElement): void {
+  textarea.style.height = `${promptTextareaMinHeight}px`
+  textarea.style.height = `${Math.min(
+    Math.max(textarea.scrollHeight, promptTextareaMinHeight),
+    promptTextareaMaxHeight,
+  )}px`
+}
 
 function questionnairesAreComplete(): boolean {
   try {
@@ -46,10 +57,19 @@ export function ScenarioPage() {
   )
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const promptTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const promptKey = scenario?.id ?? ''
+  const prompt = promptKey ? (prompts[promptKey] ?? '') : ''
 
   useEffect(() => {
     writeSessionJson(studySessionKeys.scenarioPrompts, prompts)
   }, [prompts])
+
+  useEffect(() => {
+    if (promptTextareaRef.current) {
+      resizePromptTextarea(promptTextareaRef.current)
+    }
+  }, [prompt, promptKey])
 
   if (!hasStudyAccess()) {
     return <Navigate to={routes.home} replace />
@@ -67,8 +87,6 @@ export function ScenarioPage() {
     return <Navigate to={scenarioPath(currentScenarioNumber)} replace />
   }
 
-  const promptKey = scenario.id
-  const prompt = prompts[promptKey] ?? ''
   const canContinue = isResearcherMode() || prompt.trim().length > 0
   const completedStepCount = 3 + requestedScenarioNumber
 
@@ -84,7 +102,7 @@ export function ScenarioPage() {
   }
 
   const continueToResponses = async () => {
-    if (!canContinue) return
+    if (!canContinue || isSaving) return
     setIsSaving(true)
     setSaveError('')
     try {
@@ -173,17 +191,28 @@ export function ScenarioPage() {
           Please write the prompt as you normally would.
         </p>
         <div className="scenario-prompt__bar">
-          <input
-            type="text"
+          <textarea
+            ref={promptTextareaRef}
+            rows={1}
+            maxLength={5000}
             value={prompt}
-            onChange={(event) =>
+            onChange={(event) => {
+              resizePromptTextarea(event.currentTarget)
+              const nextPrompt = event.currentTarget.value
               setPrompts((currentPrompts) => ({
                 ...currentPrompts,
-                [promptKey]: event.target.value,
+                [promptKey]: nextPrompt,
               }))
-            }
+            }}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') continueToResponses()
+              if (
+                event.key === 'Enter' &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault()
+                void continueToResponses()
+              }
             }}
             placeholder="Message the virtual agent…"
             aria-label={`Your message for scenario ${requestedScenarioNumber}`}

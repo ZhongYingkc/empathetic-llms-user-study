@@ -15,4 +15,13 @@ describe('REDCap questionnaire coding', () => {
       { itemCount: 10, scaleMin: 0, scaleMax: 6 },
     ])
   })
+
+  it('provides instructions for every questionnaire', () => {
+    expect(questionnaires.every(({ instruction }) => instruction.trim())).toBe(
+      true,
+    )
+    expect(questionnaires[0].emphasizedPhrase).toBe(
+      'close relationships in general',
+    )
+  })
 })

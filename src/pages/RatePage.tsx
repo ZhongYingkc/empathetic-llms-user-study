@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useState } from 'react'
+import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { ratingItems, responseCount } from '../data/rating'
 import { scenarioCount, scenarios } from '../data/scenarios'
@@ -31,6 +31,49 @@ type ResponseRatingDraft = {
 type RateDrafts = Record<string, ResponseRatingDraft>
 
 const emptyDraft = (): ResponseRatingDraft => ({ ratings: {}, reason: '' })
+
+const ratingReasonMinHeight = 48
+const ratingReasonMaxHeight = 144
+
+function resizeRatingReason(textarea: HTMLTextAreaElement): void {
+  textarea.style.height = `${ratingReasonMinHeight}px`
+  textarea.style.height = `${Math.min(
+    Math.max(textarea.scrollHeight, ratingReasonMinHeight),
+    ratingReasonMaxHeight,
+  )}px`
+}
+
+function RatingReasonInput({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string) => void
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (textareaRef.current) resizeRatingReason(textareaRef.current)
+  }, [value])
+
+  return (
+    <label className="rating-reason">
+      <span className="visually-hidden">Reason for your ratings</span>
+      <textarea
+        ref={textareaRef}
+        rows={1}
+        maxLength={5000}
+        value={value}
+        onChange={(event) => {
+          resizeRatingReason(event.currentTarget)
+          onChange(event.currentTarget.value)
+        }}
+        placeholder="Please briefly explain your ratings"
+        required
+      />
+    </label>
+  )
+}
 
 function draftIsComplete(draft: ResponseRatingDraft | undefined): boolean {
   return Boolean(
@@ -368,21 +411,15 @@ export function RatePage() {
                 </label>
               )
             })}
-            <label className="rating-reason">
-              <span className="visually-hidden">Reason for your ratings</span>
-              <input
-                type="text"
-                value={draft.reason}
-                onChange={(event) =>
-                  updateDraft((currentDraft) => ({
-                    ...currentDraft,
-                    reason: event.target.value,
-                  }))
-                }
-                placeholder="Please briefly explain your ratings"
-                required
-              />
-            </label>
+            <RatingReasonInput
+              value={draft.reason}
+              onChange={(reason) =>
+                updateDraft((currentDraft) => ({
+                  ...currentDraft,
+                  reason,
+                }))
+              }
+            />
           </div>
         </section>
       </section>

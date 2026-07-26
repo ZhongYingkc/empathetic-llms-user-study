@@ -3,6 +3,8 @@ type QuestionnaireDefinition = {
   name: string
   eyebrow: string
   title: string
+  instruction: string
+  emphasizedPhrase?: string
   scaleMin: number
   scaleMax: number
   items: Array<{
@@ -71,6 +73,9 @@ export const questionnaires: QuestionnaireDefinition[] = [
     name: 'Relationship Structures Questionnaire',
     eyebrow: 'PRE-STUDY QUESTIONNAIRE',
     title: 'QUESTIONNAIRE 1',
+    instruction:
+      'Please read each of the following statements and rate the extent to which you believe each statement best describes your feelings about close relationships in general.',
+    emphasizedPhrase: 'close relationships in general',
     scaleMin: 0,
     scaleMax: 6,
     items: createItems(1, relationshipStructuresItems),
@@ -80,6 +85,8 @@ export const questionnaires: QuestionnaireDefinition[] = [
     name: 'Basic Empathy Scale',
     eyebrow: 'PRE-STUDY QUESTIONNAIRE',
     title: 'QUESTIONNAIRE 2',
+    instruction:
+      'The following statements inquire about your thoughts and feelings in a variety of situations. For each item, indicate how well it describes you by choosing the appropriate score on the scale',
     scaleMin: 0,
     scaleMax: 4,
     items: createItems(2, basicEmpathyItems),
@@ -89,6 +96,8 @@ export const questionnaires: QuestionnaireDefinition[] = [
     name: 'Emotion Regulation Questionnaire',
     eyebrow: 'PRE-STUDY QUESTIONNAIRE',
     title: 'QUESTIONNAIRE 3',
+    instruction:
+      'We would like to ask you some questions about your emotional life, in particular, how you control (that is, regulate and manage) your emotions. The questions below involve two distinct aspects of your emotional life. One is your emotional experience, or what you feel like inside. The other is your emotional expression, or how you show your emotions in the way you talk, gesture, or behave. Although some of the following questions may seem similar to one another, they differ in important ways.',
     scaleMin: 0,
     scaleMax: 6,
     items: createItems(3, emotionRegulationItems),

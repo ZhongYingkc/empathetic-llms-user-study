@@ -83,6 +83,9 @@ export function QuestionnairePage() {
     (_, index) => questionnaire.scaleMin + index,
   )
   const scaleGrid = `repeat(${scaleValues.length}, 54px)`
+  const emphasizedPhraseIndex = questionnaire.emphasizedPhrase
+    ? questionnaire.instruction.indexOf(questionnaire.emphasizedPhrase)
+    : -1
   const answerIsValid = (itemId: string) => {
     const value = answers[itemId]
     return (
@@ -216,6 +219,20 @@ export function QuestionnairePage() {
             </p>
           </div>
 
+          <p className="rating-box__instruction" id="questionnaire-instruction">
+            {questionnaire.emphasizedPhrase && emphasizedPhraseIndex >= 0 ? (
+              <>
+                {questionnaire.instruction.slice(0, emphasizedPhraseIndex)}
+                <strong>{questionnaire.emphasizedPhrase}</strong>
+                {questionnaire.instruction.slice(
+                  emphasizedPhraseIndex + questionnaire.emphasizedPhrase.length,
+                )}
+              </>
+            ) : (
+              questionnaire.instruction
+            )}
+          </p>
+
           <div
             className="rating-box__scale-header"
             aria-hidden="true"
@@ -242,6 +259,7 @@ export function QuestionnairePage() {
                   className="likert-item__scale"
                   role="radiogroup"
                   aria-labelledby={`${item.id}-prompt`}
+                  aria-describedby="questionnaire-instruction"
                   style={{ gridTemplateColumns: scaleGrid }}
                 >
                   {scaleValues.map((value) => (
