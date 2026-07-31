@@ -5,7 +5,7 @@ import { createStudySession, StudyApiError } from '../services/studyApi'
 import { initializeStudySession } from '../services/studySession'
 import './HomePage.css'
 
-const studyDetails = ['≈ 30~40 MINUTES', '4 SCENARIOS', 'ANONYMOUS']
+const studyDetails = ['ABOUT 60 MINUTES', '4 SCENARIOS', 'ANONYMOUS']
 const turnstileSiteKey =
   import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '0x4AAAAAAD3XDROrQZpCr3BD'
 
