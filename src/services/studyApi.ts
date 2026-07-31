@@ -6,6 +6,8 @@ const apiBaseUrl = (
   'https://empathetic-study-api.zhongyingkc.workers.dev'
 ).replace(/\/$/u, '')
 
+const requestTimeoutMs = 15_000
+
 type ApiErrorBody = {
   error?: string
 }
@@ -30,10 +32,13 @@ async function apiRequest<T>(
     throw new StudyApiError('Your study session has expired.', 401)
   }
 
-  let response: Response
+  const abortController = new AbortController()
+  const timeoutId = setTimeout(() => abortController.abort(), requestTimeoutMs)
+
   try {
-    response = await fetch(`${apiBaseUrl}${path}`, {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
       ...init,
+      signal: abortController.signal,
       headers: {
         'Content-Type': 'application/json',
         ...(session
@@ -42,21 +47,30 @@ async function apiRequest<T>(
         ...init.headers,
       },
     })
-  } catch {
+
+    const body = (await response.json().catch(() => ({}))) as T & ApiErrorBody
+    if (!response.ok) {
+      throw new StudyApiError(
+        body.error ?? 'Unable to save your response. Please try again.',
+        response.status,
+      )
+    }
+    return body
+  } catch (error) {
+    if (error instanceof StudyApiError) throw error
+    if (abortController.signal.aborted) {
+      throw new StudyApiError(
+        'The server did not respond in time. Check your connection and try again.',
+        0,
+      )
+    }
     throw new StudyApiError(
       'Unable to reach the server. Check your connection and try again.',
       0,
     )
+  } finally {
+    clearTimeout(timeoutId)
   }
-
-  const body = (await response.json().catch(() => ({}))) as T & ApiErrorBody
-  if (!response.ok) {
-    throw new StudyApiError(
-      body.error ?? 'Unable to save your response. Please try again.',
-      response.status,
-    )
-  }
-  return body
 }
 
 export function createStudySession(
