@@ -68,7 +68,7 @@ function RatingReasonInput({
           resizeRatingReason(event.currentTarget)
           onChange(event.currentTarget.value)
         }}
-        placeholder="Please briefly explain your ratings"
+        placeholder="Brief reason (e.g., • understood feelings • missed user needs)"
         required
       />
     </label>
