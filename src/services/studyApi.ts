@@ -1,4 +1,4 @@
-import type { StudySessionBootstrap } from './studySession'
+import type { StudyStartResult } from './studySession'
 import { getBackendSession } from './studySession'
 
 const apiBaseUrl = (
@@ -76,8 +76,8 @@ async function apiRequest<T>(
 export function createStudySession(
   accessCode: string,
   turnstileToken: string,
-): Promise<StudySessionBootstrap> {
-  return apiRequest<StudySessionBootstrap>(
+): Promise<StudyStartResult> {
+  return apiRequest<StudyStartResult>(
     '/api/session',
     {
       method: 'POST',
@@ -85,6 +85,17 @@ export function createStudySession(
     },
     false,
   )
+}
+
+export async function checkBackendHealth(): Promise<void> {
+  const result = await apiRequest<{ ok?: boolean }>(
+    `/api/health?check=${crypto.randomUUID()}`,
+    { method: 'GET', cache: 'no-store' },
+    false,
+  )
+  if (result.ok !== true) {
+    throw new StudyApiError('The server health check failed.', 0)
+  }
 }
 
 export function saveQuestionnaire(

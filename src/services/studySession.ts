@@ -27,6 +27,12 @@ export type StudySessionBootstrap = {
   responseOrders: Record<string, string[]>
 }
 
+export type NetworkCheckBootstrap = {
+  accessMode: 'network-check'
+}
+
+export type StudyStartResult = StudySessionBootstrap | NetworkCheckBootstrap
+
 export function setStudyAccessMode(mode: StudyAccessMode): void {
   try {
     sessionStorage.setItem(studySessionKeys.accessMode, mode)

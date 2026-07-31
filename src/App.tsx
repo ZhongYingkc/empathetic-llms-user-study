@@ -2,6 +2,7 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { questionnairePath, routes, scenarioPath } from './config/routes'
 import { EndPage } from './pages/EndPage'
 import { HomePage } from './pages/HomePage'
+import { NetworkCheckPage } from './pages/NetworkCheckPage'
 import { QuestionnairePage } from './pages/QuestionnairePage'
 import { RatePage } from './pages/RatePage'
 import { ScenarioPage } from './pages/ScenarioPage'
@@ -11,6 +12,7 @@ function App() {
     <HashRouter>
       <Routes>
         <Route path={routes.home} element={<HomePage />} />
+        <Route path={routes.networkCheck} element={<NetworkCheckPage />} />
         <Route
           path={routes.questionnaire}
           element={<Navigate to={questionnairePath(1)} replace />}

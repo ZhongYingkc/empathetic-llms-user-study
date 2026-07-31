@@ -1,5 +1,6 @@
 export const routes = {
   home: '/',
+  networkCheck: '/network-check',
   questionnaire: '/questionnaire',
   scenarioIntroduction: '/scenario-introduction',
   scenario: '/scenario',

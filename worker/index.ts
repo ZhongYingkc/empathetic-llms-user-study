@@ -12,6 +12,7 @@ interface Env {
   TURNSTILE_SECRET_KEY: string
   PARTICIPANT_ACCESS_CODE: string
   RESEARCHER_ACCESS_CODE: string
+  NETWORK_CHECK_ACCESS_CODE: string
   SESSION_SIGNING_SECRET: string
   REDCAP_API_URL: string
   REDCAP_API_TOKEN: string
@@ -317,6 +318,17 @@ async function handleStartSession(request: Request, env: Env): Promise<Response>
   }
 
   const normalizedCode = parsed.data.accessCode.toUpperCase()
+  const networkCheckCode = env.NETWORK_CHECK_ACCESS_CODE?.trim().toUpperCase()
+  if (networkCheckCode && normalizedCode === networkCheckCode) {
+    const databaseCheck = await env.PROD_DB
+      .prepare('SELECT 1 AS ok')
+      .first<{ ok: number }>()
+    if (databaseCheck?.ok !== 1) {
+      throw new Error('The production database connectivity check failed.')
+    }
+    return json(request, { accessMode: 'network-check' })
+  }
+
   const accessMode: AccessMode | null =
     normalizedCode === env.PARTICIPANT_ACCESS_CODE.toUpperCase()
       ? 'participant'

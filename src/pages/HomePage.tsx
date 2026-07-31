@@ -80,6 +80,13 @@ export function HomePage() {
     setAccessError('')
     try {
       const session = await createStudySession(accessCode, turnstileToken)
+      if (session.accessMode === 'network-check') {
+        navigate(routes.networkCheck, {
+          replace: true,
+          state: { networkCheckAuthorized: true },
+        })
+        return
+      }
       initializeStudySession(session)
       navigate(routes.questionnaire)
     } catch (error) {
