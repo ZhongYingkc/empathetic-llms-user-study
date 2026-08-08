@@ -33,13 +33,15 @@ const exportDefinitions: Record<string, ExportDefinition> = {
       'study_version',
       'scenario_order_json',
       'response_orders_json',
+      'rating_item_orders_json',
       'created_at',
       'updated_at',
       'completed_at',
     ],
     query: `SELECT id, access_mode, status, study_version,
-      scenario_order_json, response_orders_json, created_at, updated_at,
-      completed_at FROM study_sessions ORDER BY created_at`,
+      scenario_order_json, response_orders_json, rating_item_orders_json,
+      created_at, updated_at, completed_at
+      FROM study_sessions ORDER BY created_at`,
   },
   questionnaires: {
     filename: 'questionnaire-answers.csv',

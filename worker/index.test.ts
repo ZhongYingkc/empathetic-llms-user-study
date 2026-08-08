@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { createResponseOrders, shuffle } from './index'
+import {
+  createRatingItemOrders,
+  createResponseOrders,
+  ratingItemOrderPresets,
+  shuffle,
+} from './index'
 
 describe('study randomization', () => {
   it('returns a permutation without mutating the source array', () => {
@@ -25,6 +30,35 @@ describe('study randomization', () => {
       expect(new Set(responseIds).size).toBe(5)
       expect(responseIds.every((id) => id.startsWith(`${scenarioId}-R`))).toBe(
         true,
+      )
+    }
+  })
+
+  it('creates one complete rating-item permutation for every response', () => {
+    const ratingItemOrders = createRatingItemOrders()
+    const expectedItemIds = Array.from(
+      { length: 13 },
+      (_, index) => `rating-item-${index + 1}`,
+    )
+
+    expect(Object.keys(ratingItemOrders)).toHaveLength(20)
+    for (const [responseId, itemIds] of Object.entries(ratingItemOrders)) {
+      expect(responseId).toMatch(/^S0[1-4]-R0[1-5]$/u)
+      expect(itemIds).toHaveLength(expectedItemIds.length)
+      expect(new Set(itemIds).size).toBe(expectedItemIds.length)
+      expect([...itemIds].sort()).toEqual([...expectedItemIds].sort())
+      expect(ratingItemOrderPresets).toContainEqual(itemIds)
+    }
+  })
+
+  it('provides balanced presets with every item in every position once', () => {
+    expect(ratingItemOrderPresets).toHaveLength(13)
+    for (let position = 0; position < 13; position += 1) {
+      const itemsAtPosition = ratingItemOrderPresets.map(
+        (preset) => preset[position],
+      )
+      expect(new Set(itemsAtPosition)).toEqual(
+        new Set(Array.from({ length: 13 }, (_, index) => `rating-item-${index + 1}`)),
       )
     }
   })

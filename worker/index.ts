@@ -33,6 +33,7 @@ type SessionRow = {
 }
 
 type ResponseOrders = Record<string, string[]>
+type RatingItemOrders = Record<string, string[]>
 
 const allowedOrigins = new Set([
   'https://zhongyingkc.github.io',
@@ -41,7 +42,7 @@ const allowedOrigins = new Set([
 ])
 
 const productionHostname = 'zhongyingkc.github.io'
-const studyVersion = '2026-07-25'
+const studyVersion = '2026-08-08'
 const scenarioIds = ['S01', 'S02', 'S03', 'S04'] as const
 const questionnaireRules = {
   'questionnaire-1': { itemCount: 9, min: 0, max: 6 },
@@ -52,6 +53,10 @@ const ratingItemIds = Array.from(
   { length: 13 },
   (_, index) => `rating-item-${index + 1}`,
 )
+export const ratingItemOrderPresets = ratingItemIds.map((_, offset) => [
+  ...ratingItemIds.slice(offset),
+  ...ratingItemIds.slice(0, offset),
+])
 
 const startSessionSchema = z.object({
   accessCode: z.string().trim().min(1).max(64),
@@ -132,6 +137,17 @@ export function createResponseOrders(): ResponseOrders {
         ),
       ),
     ]),
+  )
+}
+
+export function createRatingItemOrders(): RatingItemOrders {
+  return Object.fromEntries(
+    scenarioIds.flatMap((scenarioId) =>
+      Array.from({ length: 5 }, (_, index) => [
+        `${scenarioId}-R${String(index + 1).padStart(2, '0')}`,
+        [...shuffle(ratingItemOrderPresets)[0]],
+      ]),
+    ),
   )
 }
 
@@ -340,14 +356,15 @@ async function handleStartSession(request: Request, env: Env): Promise<Response>
   const sessionId = crypto.randomUUID()
   const scenarioOrder = shuffle(scenarioIds)
   const responseOrders = createResponseOrders()
+  const ratingItemOrders = createRatingItemOrders()
   const now = new Date().toISOString()
   const database = getDatabase(env, accessMode)
   await database
     .prepare(
       `INSERT INTO study_sessions (
         id, access_mode, status, study_version, scenario_order_json,
-        response_orders_json, created_at, updated_at
-      ) VALUES (?, ?, 'in_progress', ?, ?, ?, ?, ?)`,
+        response_orders_json, rating_item_orders_json, created_at, updated_at
+      ) VALUES (?, ?, 'in_progress', ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       sessionId,
@@ -355,6 +372,7 @@ async function handleStartSession(request: Request, env: Env): Promise<Response>
       studyVersion,
       JSON.stringify(scenarioOrder),
       JSON.stringify(responseOrders),
+      JSON.stringify(ratingItemOrders),
       now,
       now,
     )
@@ -372,6 +390,7 @@ async function handleStartSession(request: Request, env: Env): Promise<Response>
     studyVersion,
     scenarioOrder,
     responseOrders,
+    ratingItemOrders,
   }, 201)
 }
 

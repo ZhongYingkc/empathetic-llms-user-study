@@ -6,6 +6,7 @@ import { questionnairePath, ratePath, routes, scenarioPath } from '../config/rou
 import {
   clearStudySession,
   getCurrentScenario,
+  getRatingItemOrders,
   getResponseOrders,
   getScenarioOrder,
   getUnlockedResponse,
@@ -163,6 +164,16 @@ export function RatePage() {
   if (!response || orderedResponses.length !== responseCount) {
     return <Navigate to={routes.home} replace />
   }
+
+  const requestedRatingItemOrder = getRatingItemOrders()[response.id] ?? []
+  const orderedRatingItems = requestedRatingItemOrder
+    .map((itemId) => ratingItems.find((item) => item.id === itemId))
+    .filter((item) => item !== undefined)
+  const displayedRatingItems =
+    orderedRatingItems.length === ratingItems.length &&
+    new Set(orderedRatingItems.map((item) => item.id)).size === ratingItems.length
+      ? orderedRatingItems
+      : ratingItems
 
   const draftKey = `${scenario.id}:${response.id}`
   const draft = rateDrafts[draftKey] ?? emptyDraft()
@@ -381,7 +392,7 @@ export function RatePage() {
             <span>Strongly agree</span>
           </div>
           <div className="rating-box-rate__items">
-            {ratingItems.map((item) => {
+            {displayedRatingItems.map((item) => {
               const rating = draft.ratings[item.id]
               const displayedValue = rating ?? (item.min + item.max) / 2
               const progress =

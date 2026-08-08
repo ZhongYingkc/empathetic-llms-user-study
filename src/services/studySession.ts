@@ -7,6 +7,7 @@ export const studySessionKeys = {
   studyVersion: `${sessionPrefix}study-version`,
   scenarioOrder: `${sessionPrefix}scenario-order`,
   responseOrders: `${sessionPrefix}response-orders`,
+  ratingItemOrders: `${sessionPrefix}rating-item-orders`,
   questionnaireAnswers: `${sessionPrefix}questionnaire-answers:session`,
   questionnairesCompleted: `${sessionPrefix}questionnaires-completed`,
   currentScenario: `${sessionPrefix}current-scenario`,
@@ -25,6 +26,7 @@ export type StudySessionBootstrap = {
   studyVersion: string
   scenarioOrder: string[]
   responseOrders: Record<string, string[]>
+  ratingItemOrders: Record<string, string[]>
 }
 
 export type NetworkCheckBootstrap = {
@@ -55,6 +57,10 @@ export function initializeStudySession(session: StudySessionBootstrap): void {
     sessionStorage.setItem(
       studySessionKeys.responseOrders,
       JSON.stringify(session.responseOrders),
+    )
+    sessionStorage.setItem(
+      studySessionKeys.ratingItemOrders,
+      JSON.stringify(session.ratingItemOrders),
     )
   } catch {
     // The route guard will return to the home page if storage is unavailable.
@@ -94,6 +100,13 @@ export function getScenarioOrder(): string[] {
 export function getResponseOrders(): Record<string, string[]> {
   return readSessionJson<Record<string, string[]>>(
     studySessionKeys.responseOrders,
+    {},
+  )
+}
+
+export function getRatingItemOrders(): Record<string, string[]> {
+  return readSessionJson<Record<string, string[]>>(
+    studySessionKeys.ratingItemOrders,
     {},
   )
 }

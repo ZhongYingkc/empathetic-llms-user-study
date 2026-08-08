@@ -70,6 +70,8 @@ bytes. `.dev.vars` is ignored by Git and may be created from
 - Starting the study validates Turnstile and the access code on the Worker.
 - Participant sessions use `PROD_DB`; researcher sessions use `TEST_DB`.
 - The Worker generates and stores randomized Scenario and Response orders.
+- Each response independently selects one of 13 balanced rating-item order
+  presets; all 20 selected orders are stored with the session for auditing.
 - Each page is validated and saved before navigation continues.
 - The final submission is accepted only after the Worker verifies the complete
   participant dataset.
