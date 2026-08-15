@@ -78,6 +78,8 @@ bytes. `.dev.vars` is ignored by Git and may be created from
 - Completed participant sessions are queued in D1 and uploaded to REDCap in one
   nightly batch at 11:00 PM America/Indiana/Indianapolis time. Failed batches
   remain queued and retry the next night.
+- Sessions marked `needs_review` or `excluded` remain in D1 but are held out of
+  REDCap synchronization until their quality status is changed to `included`.
 - Researcher sessions remain in `TEST_DB` and are never sent to REDCap.
 - Exit deletes an incomplete backend session and clears the browser session.
 

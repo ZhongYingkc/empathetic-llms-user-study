@@ -57,6 +57,7 @@ export type RedcapSyncEnv = {
 }
 
 const pendingJobFilter = "j.status IN ('pending', 'syncing', 'failed')"
+const includedSessionFilter = "s.data_quality_status = 'included'"
 
 function questionnaireField(row: QuestionnaireAnswerRow): string | null {
   const match = row.item_id.match(/-item-(\d+)$/u)
@@ -180,6 +181,7 @@ async function loadPendingDataset(database: D1Database): Promise<RedcapDataset> 
            WHERE ${pendingJobFilter}
              AND s.status = 'completed'
              AND s.access_mode = 'participant'
+             AND ${includedSessionFilter}
            ORDER BY s.completed_at, s.id`,
         )
         .all<RedcapSessionRow>(),
@@ -188,7 +190,9 @@ async function loadPendingDataset(database: D1Database): Promise<RedcapDataset> 
           `SELECT q.session_id, q.questionnaire_id, q.item_id, q.value
            FROM questionnaire_answers q
            JOIN redcap_sync_jobs j ON j.session_id = q.session_id
+           JOIN study_sessions s ON s.id = q.session_id
            WHERE ${pendingJobFilter}
+             AND ${includedSessionFilter}
            ORDER BY q.session_id, q.questionnaire_id, q.item_id`,
         )
         .all<QuestionnaireAnswerRow>(),
@@ -197,7 +201,9 @@ async function loadPendingDataset(database: D1Database): Promise<RedcapDataset> 
           `SELECT p.session_id, p.scenario_id, p.display_position, p.prompt
            FROM scenario_prompts p
            JOIN redcap_sync_jobs j ON j.session_id = p.session_id
+           JOIN study_sessions s ON s.id = p.session_id
            WHERE ${pendingJobFilter}
+             AND ${includedSessionFilter}
            ORDER BY p.session_id, p.display_position`,
         )
         .all<ScenarioPromptRow>(),
@@ -208,7 +214,9 @@ async function loadPendingDataset(database: D1Database): Promise<RedcapDataset> 
                   e.content_version, e.reason
            FROM response_evaluations e
            JOIN redcap_sync_jobs j ON j.session_id = e.session_id
+           JOIN study_sessions s ON s.id = e.session_id
            WHERE ${pendingJobFilter}
+             AND ${includedSessionFilter}
            ORDER BY e.session_id, e.scenario_display_position,
                     e.response_display_position`,
         )
@@ -218,7 +226,9 @@ async function loadPendingDataset(database: D1Database): Promise<RedcapDataset> 
           `SELECT r.session_id, r.scenario_id, r.response_id, r.item_id, r.value
            FROM response_rating_items r
            JOIN redcap_sync_jobs j ON j.session_id = r.session_id
+           JOIN study_sessions s ON s.id = r.session_id
            WHERE ${pendingJobFilter}
+             AND ${includedSessionFilter}
            ORDER BY r.session_id, r.scenario_id, r.response_id, r.item_id`,
         )
         .all<RatingItemRow>(),
